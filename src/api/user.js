@@ -1,7 +1,7 @@
-import service from '@/utils/request'
+import request from '@/utils/request'
 
 export function login(data) {
-  return service({
+  return request({
     url: '/user/login',
     method: 'post',
     data
@@ -9,14 +9,14 @@ export function login(data) {
 }
 
 export function getInfo() {
-  return service({
+  return request({
     url: '/user/info',
     method: 'get'
   })
 }
 
 export function logout() {
-  return service({
+  return request({
     url: '/user/logout',
     method: 'get'
   })
