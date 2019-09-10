@@ -35,8 +35,7 @@ import nestedRouter from './modules/nested'
 
 /**
  * constantRoutes
- * a base page that does not have permission requirements
- * all roles can be accessed
+ * 所有角色都拥有的路由
  */
 export const constantRoutes = [
   {
@@ -84,18 +83,6 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/documentation',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
-        meta: { title: '文档', icon: 'documentation', affix: true }
-      }
-    ]
-  },
-  {
     path: '/profile',
     component: Layout,
     redirect: '/profile/index',
@@ -105,7 +92,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/profile/index'),
         name: 'Profile',
-        meta: { title: 'Profile', icon: 'user', noCache: true }
+        meta: { title: '个人页', icon: 'user', noCache: true }
       }
     ]
   }
@@ -119,45 +106,90 @@ export const asyncRoutes = [
   {
     path: '/permission',
     component: Layout,
-    redirect: '/permission/page',
-    alwaysShow: true, // will always show the root menu
     name: 'Permission',
     meta: {
-      title: 'Permission',
+      title: '系统权限',
       icon: 'lock',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
       {
-        path: 'page',
-        component: () => import('@/views/permission/page'),
-        name: 'PagePermission',
+        path: '/permission/user',
+        component: () => import('@/views/permission/user'),
+        name: 'User',
         meta: {
-          title: 'Page Permission',
+          title: '用户管理',
           roles: ['admin'] // or you can only set roles in sub nav
         }
       },
       {
-        path: 'directive',
-        component: () => import('@/views/permission/directive'),
-        name: 'DirectivePermission',
-        meta: {
-          title: '指令权限'
-          // if do not set roles, means: this page does not require permission
-        }
-      },
-      {
-        path: 'role',
+        path: '/permission/role',
         component: () => import('@/views/permission/role'),
         name: 'RolePermission',
         meta: {
-          title: 'Role Permission',
+          title: '角色权限',
           roles: ['admin']
+        }
+      },
+      {
+        path: '/permission/permission',
+        component: () => import('@/views/permission/directive'),
+        name: 'DirectivePermission',
+        meta: {
+          title: '权限管理'
+          // if do not set roles, means: this page does not require permission
         }
       }
     ]
   },
-
+  {
+    path: '/error',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'ErrorPages',
+    meta: {
+      title: '错误页面',
+      icon: '404'
+    },
+    children: [
+      {
+        path: '/error/401',
+        component: () => import('@/views/error-page/401'),
+        name: 'Page401',
+        meta: { title: '401', noCache: true }
+      },
+      {
+        path: '/error/404',
+        component: () => import('@/views/error-page/404'),
+        name: 'Page404',
+        meta: { title: '404', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/error-log',
+    component: Layout,
+    children: [
+      {
+        path: 'log',
+        component: () => import('@/views/error-log/index'),
+        name: 'ErrorLog',
+        meta: { title: '错误日志', icon: 'bug' }
+      }
+    ]
+  },
+  {
+    path: '/documentation',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/documentation/index'),
+        name: 'Documentation',
+        meta: { title: '文档', icon: 'documentation', affix: true }
+      }
+    ]
+  },
   {
     path: '/icon',
     component: Layout,
@@ -170,7 +202,6 @@ export const asyncRoutes = [
       }
     ]
   },
-
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
   chartsRouter,
@@ -221,45 +252,6 @@ export const asyncRoutes = [
       }
     ]
   },
-
-  {
-    path: '/error',
-    component: Layout,
-    redirect: 'noRedirect',
-    name: 'ErrorPages',
-    meta: {
-      title: '错误页面',
-      icon: '404'
-    },
-    children: [
-      {
-        path: '401',
-        component: () => import('@/views/error-page/401'),
-        name: 'Page401',
-        meta: { title: '401', noCache: true }
-      },
-      {
-        path: '404',
-        component: () => import('@/views/error-page/404'),
-        name: 'Page404',
-        meta: { title: '404', noCache: true }
-      }
-    ]
-  },
-
-  {
-    path: '/error-log',
-    component: Layout,
-    children: [
-      {
-        path: 'log',
-        component: () => import('@/views/error-log/index'),
-        name: 'ErrorLog',
-        meta: { title: '错误日志', icon: 'bug' }
-      }
-    ]
-  },
-
   {
     path: '/excel',
     component: Layout,
@@ -358,18 +350,6 @@ export const asyncRoutes = [
       }
     ]
   },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://github.com/252956/vue-link-admin',
-        meta: { title: '外链', icon: 'link' }
-      }
-    ]
-  },
-
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

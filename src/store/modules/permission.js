@@ -1,38 +1,6 @@
-import { asyncRoutes, constantRoutes } from '@/router'
 
-/**
- * Use meta.role to determine if the current user has permission
- * @param roles
- * @param route
- */
-function hasPermission(roles, route) {
-  if (route.meta && route.meta.roles) {
-    return roles.some(role => route.meta.roles.includes(role))
-  } else {
-    return true
-  }
-}
-
-/**
- * Filter asynchronous routing tables by recursion
- * @param routes asyncRoutes
- * @param roles
- */
-export function filterAsyncRoutes(routes, roles) {
-  const res = []
-
-  routes.forEach(route => {
-    const tmp = { ...route }
-    if (hasPermission(roles, tmp)) {
-      if (tmp.children) {
-        tmp.children = filterAsyncRoutes(tmp.children, roles)
-      }
-      res.push(tmp)
-    }
-  })
-
-  return res
-}
+import { constantRoutes, asyncRoutes } from '@/router'
+import store from '@/store'
 
 const state = {
   routes: [],
@@ -47,18 +15,54 @@ const mutations = {
 }
 
 const actions = {
-  generateRoutes({ commit }, roles) {
+  generateRoutes({ commit }) {
     return new Promise(resolve => {
-      let accessedRoutes
-      if (roles.includes('admin')) {
-        accessedRoutes = asyncRoutes || []
-      } else {
-        accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
-      }
+      const accessedRoutes = filterAsyncRoutes(asyncRoutes)
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })
   }
+}
+
+/**
+ * Use meta.role to determine if the current user has permission
+ * @param roles
+ * @param route
+ */
+function hasPermission(route) {
+  const menus = store.getters.menus
+  if (route.path) {
+    // eslint-disable-next-line eqeqeq
+    if (route.path == '*') {
+      return true
+    }
+    for (var menu of menus) {
+      // eslint-disable-next-line eqeqeq
+      if (route.path == menu.url) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Filter asynchronous routing tables by recursion
+ * @param routes asyncRoutes
+ * @param roles
+ */
+function filterAsyncRoutes(routes) {
+  const res = []
+  routes.forEach(route => {
+    if (hasPermission(route)) {
+      if (route.children) {
+        route.children = filterAsyncRoutes(route.children)
+      }
+      res.push(route)
+    }
+  })
+
+  return res
 }
 
 export default {
