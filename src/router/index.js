@@ -139,6 +139,24 @@ export const asyncRoutes = [
           title: '权限管理'
           // if do not set roles, means: this page does not require permission
         }
+      },
+      {
+        path: '/permission/dept',
+        component: () => import('@/views/permission/department'),
+        name: 'DirectivePermission',
+        meta: {
+          title: '部门管理'
+          // if do not set roles, means: this page does not require permission
+        }
+      },
+      {
+        path: '/permission/blog',
+        component: () => import('@/views/permission/blog'),
+        name: 'BLog',
+        meta: {
+          title: '业务日志'
+          // if do not set roles, means: this page does not require permission
+        }
       }
     ]
   },
@@ -171,7 +189,7 @@ export const asyncRoutes = [
     component: Layout,
     children: [
       {
-        path: 'log',
+        path: '/error-log',
         component: () => import('@/views/error-log/index'),
         name: 'ErrorLog',
         meta: { title: '错误日志', icon: 'bug' }
@@ -183,7 +201,7 @@ export const asyncRoutes = [
     component: Layout,
     children: [
       {
-        path: 'index',
+        path: '/documentation',
         component: () => import('@/views/documentation/index'),
         name: 'Documentation',
         meta: { title: '文档', icon: 'documentation', affix: true }
@@ -195,12 +213,16 @@ export const asyncRoutes = [
     component: Layout,
     children: [
       {
-        path: 'index',
+        path: '/icon',
         component: () => import('@/views/icons/index'),
         name: 'Icons',
         meta: { title: '图标', icon: 'icon', noCache: true }
       }
     ]
+  },
+  {
+    path: 'https://github.com/252956/vue-link-admin',
+    meta: { title: '外链', icon: 'link' }
   },
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
