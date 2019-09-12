@@ -1,112 +1,113 @@
 <template>
   <div class="app-container">
-    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
+    <div class="filter-container">
+      <el-input
+        v-model="listQuery.name"
+        placeholder="账号"
+        style="width: 200px;"
+        class="filter-item"
+      />
+      <el-input
+        v-model="listQuery.vserName"
+        placeholder="真实姓名"
+        style="width: 200px;"
+        class="filter-item"
+      />
+      <el-input
+        v-model="listQuery.deptid"
+        placeholder="部门"
+        style="width: 200px;"
+        class="filter-item"
+      />
+
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleSearch"
+      >查找</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >新增</el-button>
+    </div>
+
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      style="width: 100%;"
+      height="450"
+    >
+      <el-table-column prop="name" label="账号" width="120"></el-table-column>
+      <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
+      <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
+      <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+      <el-table-column prop="state" label="状态" width="80"></el-table-column>
+      <el-table-column prop="roleName" label="角色" width="150"></el-table-column>
+      <el-table-column prop="companyName" label="公司" width="120"></el-table-column>
+      <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
+      <el-table-column label="操作" width="120">
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="180px" align="center" label="Date">
-        <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="120px" align="center" label="Author">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="100px" label="Importance">
-        <template slot-scope="scope">
-          <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon" />
-        </template>
-      </el-table-column>
-
-      <el-table-column class-name="status-col" label="Status" width="110">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column min-width="300px" label="Title">
-        <template slot-scope="{row}">
-          <router-link :to="'/example/edit/'+row.id" class="link-type">
-            <span>{{ row.title }}</span>
-          </router-link>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" label="Actions" width="120">
-        <template slot-scope="scope">
-          <router-link :to="'/example/edit/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">
-              Edit
-            </el-button>
-          </router-link>
+          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+          <el-button type="text" size="small">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
   </div>
 </template>
-
 <script>
-import { fetchList } from '@/api/article'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-
+import { userList } from "@/api/user";
+import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 export default {
-  name: 'ArticleList',
+  name: "User",
   components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    }
-  },
   data() {
     return {
+      searchOptions: [
+        { label: "登录名", key: "name" },
+        { label: "真实姓名", key: "vserName" },
+        { label: "手机号", key: "mobile" }
+      ],
+      tableKey: 0,
       list: null,
       total: 0,
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20
+        limit: 20,
+        vserName: "",
+        name: "",
+        mobile: "",
+        deptid: ""
       }
-    }
+    };
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
-    getList() {
-      this.listLoading = false
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-        this.listLoading = false
-      })
-    }
+    async getList() {
+      this.listLoading = true;
+      const res = await userList(this.listQuery);
+      this.listLoading = false;
+      this.list = res.result.rows;
+      this.total = res.result.records;
+    },
+    handleSearch() {this.getList()},
+    handleCreate() {}
   }
-}
+};
 </script>
-
-<style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-</style>

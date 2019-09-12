@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getRoutes() {
+export function roleList(data) {
   return request({
-    url: '/routes',
-    method: 'get'
+    url: '/rest/role/list',
+    method: 'post',
+    data
   })
 }
 

@@ -4,9 +4,7 @@ import { resetRouter } from '@/router'
 
 const state = {
   token: getToken(),
-  name: '',
-  avatar: '',
-  introduction: '',
+  userinfo: {},
   roles: [],
   menus: [],
   permissions: []
@@ -16,14 +14,8 @@ const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_INTRODUCTION: (state, introduction) => {
-    state.introduction = introduction
-  },
-  SET_NAME: (state, name) => {
-    state.name = name
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
+  SET_USER: (state, userinfo) => {
+    state.userinfo = userinfo
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
@@ -58,9 +50,11 @@ const actions = {
         if (!response) {
           reject('Verification failed, please Login again.')
         }
-
-        const { roles, menus, permissions, name, avatar, introduction } = response.result
-
+        const userinfo = response.result
+        if (!userinfo || userinfo == null) {
+          reject('getInfo: userinfo must be a non-null object!')
+        }
+        const { roles, menus, permissions } = userinfo
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
@@ -72,12 +66,11 @@ const actions = {
         for (var rname of roles) {
           rolesName.push(rname.name)
         }
+
+        commit('SET_USER', userinfo)
         commit('SET_ROLES', rolesName)
         commit('SET_MENUS', menus)
         commit('SET_PERMISSIONS', permissions)
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        commit('SET_INTRODUCTION', introduction)
         // resolve(response.result)
         resolve()
       }).catch(error => {
@@ -107,7 +100,6 @@ const actions = {
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
-      commit('SET_ROLES', [])
       removeToken()
       resolve()
     })
