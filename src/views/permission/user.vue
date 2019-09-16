@@ -21,7 +21,6 @@
       />
 
       <el-button
-        v-waves
         class="filter-item"
         type="primary"
         icon="el-icon-search"
@@ -106,8 +105,11 @@ export default {
       this.list = res.result.rows;
       this.total = res.result.records;
     },
-    handleSearch() {this.getList()},
-    handleCreate() {}
+    handleSearch() {
+      this.getList();
+    },
+    handleCreate() {},
+    handleClick() {}
   }
 };
 </script>
