@@ -49,8 +49,8 @@
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑角色':'新增'">
-      <el-form :model="role" label-width="80px" label-position="left">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
+      <el-form :model="role"  label-width="80px" label-position="left">
         <el-form-item label="角色名">
           <el-input v-model="role.name" placeholder="角色名" />
         </el-form-item>
@@ -66,7 +66,7 @@
           <el-tree
             ref="tree"
             :check-strictly="checkStrictly"
-            :data="routesData"
+            :data="permissions"
             :props="defaultProps"
             show-checkbox
             node-key="id"
@@ -82,14 +82,16 @@
   </div>
 </template>
 <script>
-import { roleList,addRole,updateRole,deleteRole } from "@/api/role";
+import { roleList, addRole, updateRole, deleteRole } from "@/api/role";
 import { permissions, permissionsByRole } from "@/api/permission";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import { deepClone } from "@/utils";
+import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultRole = {
   id: "",
   name: "",
-  description: ""
+  description: "",
+  permIds: ""
 };
 export default {
   name: "Role",
@@ -102,7 +104,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         name: ""
       },
       role: Object.assign({}, defaultRole),
@@ -116,11 +118,6 @@ export default {
       permissions: [],
       permissionsByRole: []
     };
-  },
-  computed: {
-    routesData() {
-      return this.permissions;
-    }
   },
   created() {
     this.getList();
@@ -180,35 +177,43 @@ export default {
       this.$refs.tree.setCheckedNodes(this.generateArr(this.permissionsByRole));
       //this.$refs.tree.setCheckedNodes(this.generateArr(this.permissionsByRole));
     },
-    handleDelete() {},
     async confirmRole() {
-      const isEdit = this.dialogType === 'edit'
-      const checkedKeys = this.$refs.tree.getCheckedKeys()
-
-      if (isEdit) {
-        await updateRole(this.role)
-        for (let index = 0; index < this.rolesList.length; index++) {
-          if (this.rolesList[index].key === this.role.key) {
-            this.rolesList.splice(index, 1, Object.assign({}, this.role))
-            break
-          }
-        }
-      } else {
-        await addRole(this.role)
+      const isEdit = this.dialogType === "edit";
+      var checkedKeys = this.$refs.tree.getCheckedKeys();
+      if (!isEmpty(checkedKeys)) {
+        this.role.permIds = checkedKeys.join(",");
       }
-
-      const { description, key, name } = this.role
-      this.dialogVisible = false
-      this.$notify({
-        title: 'Success',
-        dangerouslyUseHTMLString: true,
-        message: `
-            <div>Role Key: ${key}</div>
-            <div>Role Name: ${name}</div>
-            <div>Description: ${description}</div>
-          `,
-        type: 'success'
+      if (isEdit) {
+        await updateRole(this.role);
+      } else {
+        await addRole(this.role);
+      }
+      this.dialogVisible = false;
+      this.$message({
+        showClose: true,
+        message: "保存成功",
+        type: "success"
+      });
+      this.getList();
+    },
+    handleDelete({row}) {
+      this.$confirm("确认删除角色?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
+        .then(async () => {
+          await deleteRole(row.id);
+          this.$message({
+            showClose: true,
+            message: "删除成功",
+            type: "success"
+          });
+          this.getList();
+        })
+        .catch(err => {
+          console.error(err);
+        });
     }
   }
 };

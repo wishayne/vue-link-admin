@@ -8,16 +8,16 @@ export function roleList(data) {
   })
 }
 
-export function getRoles() {
+export function roles() {
   return request({
-    url: '/roles',
+    url: '/rest/role/all',
     method: 'get'
   })
 }
 
 export function addRole(data) {
   return request({
-    url: '/role/add',
+    url: '/rest/role/add',
     method: 'post',
     data
   })
@@ -25,7 +25,7 @@ export function addRole(data) {
 
 export function updateRole(data) {
   return request({
-    url: `/role/update`,
+    url: `/rest/role/update`,
     method: 'post',
     data
   })
@@ -33,7 +33,7 @@ export function updateRole(data) {
 
 export function deleteRole(id) {
   return request({
-    url: `/role/${id}`,
-    method: 'delete'
+    url: `/rest/role/delete/${id}`,
+    method: 'get'
   })
 }

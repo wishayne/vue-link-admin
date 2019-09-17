@@ -125,7 +125,7 @@ export const asyncRoutes = [
       {
         path: '/permission/role',
         component: () => import('@/views/permission/role'),
-        name: 'RolePermission',
+        name: 'Role',
         meta: {
           title: '角色权限',
           roles: ['admin']
@@ -133,8 +133,8 @@ export const asyncRoutes = [
       },
       {
         path: '/permission/permission',
-        component: () => import('@/views/permission/directive'),
-        name: 'DirectivePermission',
+        component: () => import('@/views/permission/permission'),
+        name: 'Permission',
         meta: {
           title: '权限管理'
           // if do not set roles, means: this page does not require permission
@@ -143,7 +143,7 @@ export const asyncRoutes = [
       {
         path: '/permission/dept',
         component: () => import('@/views/permission/department'),
-        name: 'DirectivePermission',
+        name: 'Department',
         meta: {
           title: '部门管理'
           // if do not set roles, means: this page does not require permission

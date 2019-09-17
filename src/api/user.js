@@ -37,3 +37,19 @@ export function userList(data) {
     data
   })
 }
+
+export function addUser(data) {
+  return request({
+    url: '/rest/user/add',
+    method: 'post',
+    data
+  })
+}
+
+export function updateUser(data) {
+  return request({
+    url: `/rest/user/update`,
+    method: 'post',
+    data
+  })
+}

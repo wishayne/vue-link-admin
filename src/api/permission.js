@@ -13,3 +13,25 @@ export function permissionsByRole(data) {
     method: 'get'
   })
 }
+
+export function addPermission(data) {
+  return request({
+    url: '/rest/permission/add',
+    method: 'post',
+    data
+  })
+}
+
+export function updatePermission(data) {
+  return request({
+    url: `/rest/permission/update`,
+    method: 'post',
+    data
+  })
+}
+export function deletePermission(id) {
+  return request({
+    url: `/rest/permission/delete/${id}`,
+    method: 'get'
+  })
+}

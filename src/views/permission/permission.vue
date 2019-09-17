@@ -4,7 +4,7 @@
       <el-form-item>
         <el-tree
           ref="tree"
-          :data="departments"
+          :data="permissions"
           :props="defaultProps"
           node-key="id"
           class="permission-tree"
@@ -23,100 +23,100 @@
       </el-form-item>
     </el-form>
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
-      <el-form :model="department" label-width="80px" label-position="left">
-        <el-form-item label="上级部门">
-          <span>{{department.parentName}}</span>
+      <el-form :model="permission" label-width="80px" label-position="left">
+        <el-form-item label="上级权限">
+          <span>{{permission.parentName}}</span>
         </el-form-item>
-        <el-form-item label="部门名">
-          <el-input v-model="department.name" placeholder="部门名" />
+        <el-form-item label="权限名">
+          <el-input v-model="permission.name" placeholder="权限名" />
         </el-form-item>
-        <el-form-item label="级别">
-          <el-select v-model="department.levels" style="width: 140px" class="filter-item">
+        <el-form-item label="权限类型">
+          <el-select v-model="permission.types" style="width: 140px" class="filter-item">
             <el-option
-              v-for="item in levelsOptions"
+              v-for="item in typesOptions"
               :key="item.key"
               :label="item.label"
               :value="item.key"
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="url">
+          <el-input v-model="permission.url" placeholder="url" />
+        </el-form-item>
         <el-form-item label="排序">
-          <el-input v-model="department.sorts" placeholder="排序" />
+          <el-input v-model="permission.sorts" placeholder="排序" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmDepartment">确定</el-button>
+        <el-button type="primary" @click="confirmPermission">确定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
 import {
-  departments,
-  addDpartment,
-  updateDpartment,
-  deleteDpartment
-} from "@/api/department";
+  permissions,
+  addPermission,
+  updatePermission,
+  deletePermission
+} from "@/api/permission";
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
-const defaultDepartment = {
+const defaultPermission = {
   id: "",
   name: "",
   parentId: "",
   parentName: "",
-  levels: "",
-  deleted: 0
+  url: "",
+  types: "",
+  sorts: ""
 };
 export default {
-  name: "Department",
+  name: "Permission",
   data() {
     return {
       defaultProps: {
         children: "childrens",
         label: "name"
       },
-      department: Object.assign({}, defaultDepartment),
-      departments: [],
+      permission: Object.assign({}, defaultPermission),
+      permissions: [],
       dialogVisible: false,
       dialogType: "new",
-      levelsOptions: [
-        { label: "集团", key: 0 },
-        { label: "分公司", key: 1 },
-        { label: "部门", key: 2 }
-      ]
+      typesOptions: [{ label: "菜单", key: 0 }, { label: "功能权限", key: 1 }]
     };
   },
   created() {
-    this.getDepartments();
+    this.getPermissions();
   },
   methods: {
-    async getDepartments() {
-      const res = await departments();
-      this.departments = [{ id: 0, name: "部门树", childrens: res.result }];
+    async getPermissions() {
+      const res = await permissions();
+      this.permissions = [{ id: 0, name: "权限树", childrens: res.result }];
     },
     handleCreate(data) {
       this.dialogType = "new";
       this.dialogVisible = true;
-      this.department = Object.assign({}, defaultDepartment);
-      this.department.parentId = data.id;
-      this.department.parentName = data.name;
+      this.permission = Object.assign({}, defaultPermission);
+      this.permission.parentId = data.id;
+      this.permission.parentName = data.name;
     },
 
     async handleEdit(node, data) {
       this.dialogType = "edit";
       this.dialogVisible = true;
-      this.department = deepClone(data);
+      this.permission = deepClone(data);
       const parent = node.parent.data;
-      this.department.parentId = parent.id;
-      this.department.parentName = parent.name;
+      this.permission.parentId = parent.id;
+      this.permission.parentName = parent.name;
     },
-    async confirmDepartment() {
+    async confirmPermission() {
       const isEdit = this.dialogType === "edit";
       if (isEdit) {
-        await updateDpartment(this.department);
+        await updatePermission(this.permission);
       } else {
-        await addDpartment(this.department);
+        await addPermission(this.permission);
       }
       this.dialogVisible = false;
       this.$message({
@@ -124,7 +124,7 @@ export default {
         message: "保存成功",
         type: "success"
       });
-      this.getDepartments();
+      this.getPermissions();
     },
     handleDelete(data) {
       this.$confirm("确认删除?", "警告", {
@@ -133,13 +133,13 @@ export default {
         type: "warning"
       })
         .then(async () => {
-          await deleteDpartment(data.id);
+          await deletePermission(data.id);
           this.$message({
             showClose: true,
             message: "删除成功",
             type: "success"
           });
-          this.getDepartments();
+          this.getPermissions();
         })
         .catch(err => {
           console.error(err);

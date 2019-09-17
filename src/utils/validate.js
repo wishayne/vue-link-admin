@@ -1,7 +1,10 @@
 /**
  * Created by PanJiaChen on 16/11/18.
  */
-
+export function isEmpty(str) {
+  // eslint-disable-next-line eqeqeq
+  return str == '' || str == null || str == undefined
+}
 /**
  * @param {string} path
  * @returns {Boolean}

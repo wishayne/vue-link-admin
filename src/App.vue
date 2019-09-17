@@ -6,6 +6,11 @@
 
 <script>
 export default {
-  name: 'App'
-}
+  name: "App"
+};
 </script>
+<style >
+.el-dialog__body {
+  padding-top: 5px;
+}
+</style>
