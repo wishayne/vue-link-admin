@@ -33,7 +33,8 @@ export function updateRole(data) {
 
 export function deleteRole(id) {
   return request({
-    url: `/rest/role/delete/${id}`,
-    method: 'get'
+    url: `/rest/role/delete`,
+    method: 'get',
+    params: { id }
   })
 }

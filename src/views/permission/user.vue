@@ -14,7 +14,7 @@
         class="filter-item"
       />
       <el-input
-        v-model="listQuery.deptid"
+        v-model="listQuery.deptName"
         placeholder="部门"
         style="width: 200px;"
         class="filter-item"
@@ -42,8 +42,8 @@
       <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
       <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
-      <el-table-column prop="state" label="状态" width="80"></el-table-column>
-      <el-table-column prop="roleName" label="角色" width="150"></el-table-column>
+      <el-table-column prop="state" label="状态" width="80" :formatter="formatState"></el-table-column>
+      <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
       <el-table-column prop="companyName" label="公司" width="120"></el-table-column>
       <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column label="操作">
@@ -60,8 +60,8 @@
       @pagination="getList"
     />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'" >
-      <el-form :model="user" label-width="80px" label-position="left" style="height: 380px;">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
+      <el-form :model="user" label-width="80px" label-position="left" style="height: 410px;">
         <el-tabs v-model="activeName">
           <el-tab-pane label="用户信息" name="first">
             <el-form-item label="账号">
@@ -91,19 +91,29 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="部门" name="second">
-            <el-form-item >
+            <el-form-item>
               <el-tree
                 ref="tree"
                 :check-strictly="true"
                 :data="departments"
                 :props="defaultProps"
+                :default-expanded-keys="defaultExpandeds"
                 show-checkbox
                 node-key="id"
                 class="permission-tree"
               />
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="角色" name="third">角色管理</el-tab-pane>
+          <el-tab-pane label="角色" name="third">
+            <el-checkbox-group v-model="user.roleIds">
+              <el-checkbox
+                v-for="item in roles"
+                :key="item.id"
+                :label="item.id"
+                style="padding-top:20px"
+              >{{item.name}}</el-checkbox>
+            </el-checkbox-group>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
 
@@ -115,9 +125,9 @@
   </div>
 </template>
 <script>
-import { userList, addUser, updateUser } from "@/api/user";
-import { departments } from "@/api/department";
-import { roles } from "@/api/role";
+import { userList, addUser, updateUser } from "@/api/permission/user";
+import { departments } from "@/api/permission/department";
+import { roles } from "@/api/permission/role";
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
@@ -129,8 +139,9 @@ const defaultUser = {
   mobile: "",
   state: 0,
   email: "",
-  deptid: "",
-  deptName: ""
+  deptid: -1,
+  deptName: "",
+  roleIds: []
 };
 export default {
   name: "User",
@@ -152,16 +163,18 @@ export default {
         vserName: "",
         name: "",
         mobile: "",
-        deptid: ""
+        deptName: ""
       },
-      activeName: 'first',
       user: Object.assign({}, defaultUser),
       defaultProps: {
         children: "childrens",
         label: "name"
       },
+      defaultExpandeds: [],
       stateOptions: [{ label: "禁用", key: 0 }, { label: "启用", key: 1 }],
       departments: [],
+      roles: [],
+      activeName: "first",
       dialogVisible: false,
       dialogType: "new"
     };
@@ -182,6 +195,22 @@ export default {
     handleSearch() {
       this.getList();
     },
+    formatRole(row, column) {
+      var roleNames = [];
+      row.roles.forEach(role => {
+        roleNames.push(role.name);
+      });
+      return roleNames.join(" , ");
+    },
+    formatState(row, column) {
+      var val = "";
+      if (row.state == 1) {
+        val = "正常";
+      } else {
+        val = "禁用";
+      }
+      return val;
+    },
     async getDepartments() {
       const res = await departments();
       this.departments = res.result;
@@ -191,20 +220,38 @@ export default {
       this.roles = res.result;
     },
     handleCreate() {
-      this.user = Object.assign({}, defaultUser);
       this.dialogType = "new";
+      this.activeName = "first";
       this.dialogVisible = true;
+      this.user = Object.assign({}, defaultUser);
+      if (this.$refs.tree) {
+        this.$refs.tree.setCheckedKeys([], true);
+      }
     },
-    async handleEdit(scope) {
+    handleEdit(scope) {
       this.dialogType = "edit";
+      this.activeName = "first";
       this.dialogVisible = true;
       this.user = deepClone(scope.row);
+      if (scope.row.roles) {
+        let roleIds = [];
+        scope.row.roles.forEach(role => {
+          roleIds.push(role.id);
+        });
+        this.user.roleIds = roleIds;
+      }
+      this.$nextTick(() => {
+        this.$refs.tree.setCheckedKeys([scope.row.deptid], true);
+        this.defaultExpandeds=[scope.row.deptid];
+      });
     },
     async confirmUser() {
       const isEdit = this.dialogType === "edit";
       var checkedKeys = this.$refs.tree.getCheckedKeys();
-      if (!isEmpty(checkedKeys)) {
-        this.user.deptid = checkedKeys.join(",");
+      if (checkedKeys) {
+        this.user.deptid = Number(checkedKeys.join(","));
+      } else {
+        this.user.deptid = -1;
       }
       if (isEdit) {
         await updateUser(this.user);

@@ -7,7 +7,6 @@ export function departments() {
   })
 }
 
-
 export function addDpartment(data) {
   return request({
     url: '/rest/department/add',
@@ -25,7 +24,8 @@ export function updateDpartment(data) {
 }
 export function deleteDpartment(id) {
   return request({
-    url: `/rest/department/delete/${id}`,
-    method: 'get'
+    url: '/rest/department/delete',
+    method: 'get',
+    params: { id }
   })
 }

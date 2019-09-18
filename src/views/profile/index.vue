@@ -111,7 +111,7 @@
 import store from '@/store'
 import { MessageBox, Message } from 'element-ui'
 import { mapGetters } from "vuex";
-import { modifyPwd } from "@/api/user";
+import { modifyPwd } from "@/api/permission/user";
 import PanThumb from "@/components/PanThumb";
 import Activity from "./components/Activity"
 

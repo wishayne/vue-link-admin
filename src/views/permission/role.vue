@@ -50,7 +50,7 @@
       @pagination="getList"
     />
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
-      <el-form :model="role"  label-width="80px" label-position="left">
+      <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="角色名">
           <el-input v-model="role.name" placeholder="角色名" />
         </el-form-item>
@@ -82,8 +82,8 @@
   </div>
 </template>
 <script>
-import { roleList, addRole, updateRole, deleteRole } from "@/api/role";
-import { permissions, permissionsByRole } from "@/api/permission";
+import { roleList, addRole, updateRole, deleteRole } from "@/api/permission/role";
+import { permissions, permissionsByRole } from "@/api/permission/permission";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
@@ -174,7 +174,11 @@ export default {
       this.role = deepClone(scope.row);
       const res = await permissionsByRole(this.role.id);
       this.permissionsByRole = res.result;
-      this.$refs.tree.setCheckedNodes(this.generateArr(this.permissionsByRole));
+      this.$nextTick(() => {
+        this.$refs.tree.setCheckedNodes(
+          this.generateArr(this.permissionsByRole)
+        );
+      });
       //this.$refs.tree.setCheckedNodes(this.generateArr(this.permissionsByRole));
     },
     async confirmRole() {
@@ -196,7 +200,7 @@ export default {
       });
       this.getList();
     },
-    handleDelete({row}) {
+    handleDelete({ row }) {
       this.$confirm("确认删除角色?", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

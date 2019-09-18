@@ -57,7 +57,7 @@ import {
   addDpartment,
   updateDpartment,
   deleteDpartment
-} from "@/api/department";
+} from "@/api/permission/department";
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultDepartment = {

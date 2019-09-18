@@ -60,7 +60,7 @@ import {
   addPermission,
   updatePermission,
   deletePermission
-} from "@/api/permission";
+} from "@/api/permission/permission";
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultPermission = {

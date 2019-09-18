@@ -148,15 +148,6 @@ export const asyncRoutes = [
           title: '部门管理'
           // if do not set roles, means: this page does not require permission
         }
-      },
-      {
-        path: '/permission/blog',
-        component: () => import('@/views/permission/blog'),
-        name: 'BLog',
-        meta: {
-          title: '业务日志'
-          // if do not set roles, means: this page does not require permission
-        }
       }
     ]
   },

@@ -31,7 +31,8 @@ export function updatePermission(data) {
 }
 export function deletePermission(id) {
   return request({
-    url: `/rest/permission/delete/${id}`,
-    method: 'get'
+    url: `/rest/permission/delete`,
+    method: 'get',
+    params: { id }
   })
 }
