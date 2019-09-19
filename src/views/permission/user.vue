@@ -55,7 +55,7 @@
       <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button @click="handleEdit(scope)" type="text" size="small">编辑</el-button>
+          <el-button @click="handleEdit(scope)" type="text" size="small" v-permission="['/rest/user/update']">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
