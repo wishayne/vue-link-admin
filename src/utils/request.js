@@ -7,10 +7,8 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API_URL, // url = base url + request url
   timeout: 7000, // request timeout
-  responseType: 'json',
-  headers: {
-    'Content-Type': 'application/json;charset=utf-8'
-  }
+  responseType: 'json'
+  
 })
 
 // request interceptor

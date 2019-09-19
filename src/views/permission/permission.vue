@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form label-width="120px" label-position="left" style="margin-top:30px;width:450px">
+    <el-form label-width="120px" label-position="left" style="margin-top:30px;width:550px">
       <el-form-item>
         <el-tree
           ref="tree"

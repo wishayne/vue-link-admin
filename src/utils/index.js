@@ -37,7 +37,7 @@ export function parseTime(time, cFormat) {
   const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
-    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value ] }
+    if (key === 'a') { return ['日', '一', '二', '三', '四', '五', '六'][value] }
     if (result.length > 0 && value < 10) {
       value = '0' + value
     }
@@ -163,12 +163,12 @@ export function param2Obj(url) {
   }
   return JSON.parse(
     '{"' +
-      decodeURIComponent(search)
-        .replace(/"/g, '\\"')
-        .replace(/&/g, '","')
-        .replace(/=/g, '":"')
-        .replace(/\+/g, ' ') +
-      '"}'
+    decodeURIComponent(search)
+      .replace(/"/g, '\\"')
+      .replace(/&/g, '","')
+      .replace(/=/g, '":"')
+      .replace(/\+/g, ' ') +
+    '"}'
   )
 }
 
@@ -247,7 +247,7 @@ export function getTime(type) {
 export function debounce(func, wait, immediate) {
   let timeout, args, context, timestamp, result
 
-  const later = function() {
+  const later = function () {
     // 据上一次触发时间间隔
     const last = +new Date() - timestamp
 
@@ -264,7 +264,7 @@ export function debounce(func, wait, immediate) {
     }
   }
 
-  return function(...args) {
+  return function (...args) {
     context = this
     timestamp = +new Date()
     const callNow = immediate && !timeout
@@ -280,9 +280,7 @@ export function debounce(func, wait, immediate) {
 }
 
 /**
- * This is just a simple version of deep copy
- * Has a lot of edge cases bug
- * If you want to use a perfect deep copy, use lodash's _.cloneDeep
+ * 深拷贝对象:创建一个新对象返回
  * @param {Object} source
  * @returns {Object}
  */
@@ -299,6 +297,25 @@ export function deepClone(source) {
     }
   })
   return targetObj
+}
+/**
+ * 深拷贝属性:将source中的属性【并且该属性也在target中】，值赋值给target
+ * @param {Object} target
+ * @param {Object} source
+ */
+export function deepCloneAttributes(target, source) {
+  if (!source && typeof source !== 'object' && !target && typeof target !== 'object') {
+    throw new Error('error arguments', 'deepCloneAttributes')
+  }
+  Object.keys(target).forEach(keys => {
+    if (source[keys]) {
+      if (target[keys] && typeof target[keys] === 'object') {
+        target[keys] = deepCloneAttributes(target[keys], source[keys])
+      } else {
+        target[keys] = source[keys]
+      }
+    }
+  })
 }
 
 /**

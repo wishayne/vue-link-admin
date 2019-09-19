@@ -32,8 +32,8 @@
 
     <el-table
       :key="tableKey"
-      v-loading="listLoading"
       :data="list"
+      v-loading="listLoading"
       border
       style="width: 100%;"
       height="450"
@@ -128,7 +128,7 @@
 import { userList, addUser, updateUser } from "@/api/permission/user";
 import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
-import { deepClone } from "@/utils";
+import { deepCloneAttributes } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 const defaultUser = {
@@ -232,17 +232,17 @@ export default {
       this.dialogType = "edit";
       this.activeName = "first";
       this.dialogVisible = true;
-      this.user = deepClone(scope.row);
-      if (scope.row.roles) {
-        let roleIds = [];
-        scope.row.roles.forEach(role => {
-          roleIds.push(role.id);
-        });
-        this.user.roleIds = roleIds;
-      }
+      deepCloneAttributes(this.user,scope.row);
       this.$nextTick(() => {
         this.$refs.tree.setCheckedKeys([scope.row.deptid], true);
-        this.defaultExpandeds=[scope.row.deptid];
+        this.defaultExpandeds = [scope.row.deptid];
+        if (scope.row.roles) {
+          let roleIds = [];
+          scope.row.roles.forEach(role => {
+            roleIds.push(role.id);
+          });
+          this.user.roleIds = roleIds;
+        }
       });
     },
     async confirmUser() {
