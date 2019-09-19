@@ -9,11 +9,11 @@
       />
 
       <el-button
-        v-waves
         class="filter-item"
         type="primary"
         icon="el-icon-search"
         @click="handleSearch"
+        v-permission="['/rest/role/list']"
       >查找</el-button>
       <el-button
         class="filter-item"
@@ -21,6 +21,7 @@
         type="primary"
         icon="el-icon-edit"
         @click="handleCreate"
+        v-permission="['/rest/role/add']"
       >新增</el-button>
     </div>
 
@@ -82,6 +83,7 @@
   </div>
 </template>
 <script>
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import { roleList, addRole, updateRole, deleteRole } from "@/api/permission/role";
 import { permissions, permissionsByRole } from "@/api/permission/permission";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
@@ -96,6 +98,7 @@ const defaultRole = {
 export default {
   name: "Role",
   components: { Pagination },
+  directives: { permission },
   data() {
     return {
       tableKey: 0,

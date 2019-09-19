@@ -8,7 +8,6 @@ const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API_URL, // url = base url + request url
   timeout: 7000, // request timeout
   responseType: 'json'
-  
 })
 
 // request interceptor

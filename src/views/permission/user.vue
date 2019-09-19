@@ -20,13 +20,20 @@
         class="filter-item"
       />
 
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch">查找</el-button>
+      <el-button
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleSearch"
+        v-permission="['/rest/user/list']"
+      >查找</el-button>
       <el-button
         class="filter-item"
         style="margin-left: 10px;"
         type="primary"
         icon="el-icon-edit"
         @click="handleCreate"
+        v-permission="['/rest/user/add']"
       >新增</el-button>
     </div>
 
@@ -125,6 +132,7 @@
   </div>
 </template>
 <script>
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import { userList, addUser, updateUser } from "@/api/permission/user";
 import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
@@ -146,6 +154,7 @@ const defaultUser = {
 export default {
   name: "User",
   components: { Pagination },
+  directives: { permission },
   data() {
     return {
       searchOptions: [
@@ -232,7 +241,7 @@ export default {
       this.dialogType = "edit";
       this.activeName = "first";
       this.dialogVisible = true;
-      deepCloneAttributes(this.user,scope.row);
+      deepCloneAttributes(this.user, scope.row);
       this.$nextTick(() => {
         this.$refs.tree.setCheckedKeys([scope.row.deptid], true);
         this.defaultExpandeds = [scope.row.deptid];

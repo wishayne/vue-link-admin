@@ -14,9 +14,9 @@
           <span class="custom-tree-node" slot-scope="{ node, data }">
             <span>{{ node.label }}</span>
             <span>
-              <el-button type="text" size="mini" @click="() => handleCreate(data)">添加</el-button>
-              <el-button type="text" size="mini" @click="() => handleEdit(node,data)">修改</el-button>
-              <el-button type="text" size="mini" @click="() => handleDelete(data)">删除</el-button>
+              <el-button type="text" size="mini" @click="() => handleCreate(data)" v-permission="['/rest/permission/add']">添加</el-button>
+              <el-button type="text" size="mini" @click="() => handleEdit(node,data)" v-permission="['/rest/permission/add']">修改</el-button>
+              <el-button type="text" size="mini" @click="() => handleDelete(data)" v-permission="['/rest/permission/add']">删除</el-button>
             </span>
           </span>
         </el-tree>
@@ -55,6 +55,7 @@
   </div>
 </template>
 <script>
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import {
   permissions,
   addPermission,
@@ -74,6 +75,7 @@ const defaultPermission = {
 };
 export default {
   name: "Permission",
+  directives: { permission },
   data() {
     return {
       defaultProps: {
