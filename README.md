@@ -21,7 +21,7 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
 
 ```bash
 # 克隆项目
-git clone https://github.com/PanJiaChen/vue-element-admin.git
+git https://github.com/252956/vue-link-admin.git
 
 # 进入项目目录
 cd vue-link-admin
