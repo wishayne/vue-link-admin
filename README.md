@@ -15,10 +15,10 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
   <img width="900" src="http://chuantu.xyz/t6/702/1568941350x1033347913.png">
 </p>
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941181x2890202733.png">
+  <img width="900" src="http://chuantu.xyz/t6/702/1568941424x1033347913.png">
 </p>
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941424x1033347913.png">
+  <img width="900" src="http://chuantu.xyz/t6/702/1568941477x1031866013.png">
 </p>
  <p align="center">
   <img width="900" src="http://chuantu.xyz/t6/702/1568941181x2890202733.png">
