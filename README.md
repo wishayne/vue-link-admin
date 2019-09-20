@@ -13,7 +13,7 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
 
 
  <p align="center">
-  <img width="900" src="https://wpimg.wallstcn.com/a5894c1b-f6af-456e-82df-1151da0839bf.png">
+  <img width="900" src="http://chuantu.xyz/t6/702/1568941181x2890202733.png">
 </p>
 
 
