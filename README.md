@@ -12,16 +12,16 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
 你需要在本地安装 [node](http://nodejs.org/) 和 [git](https://git-scm.com/)。本项目技术栈基于 [ES2015+](http://es6.ruanyifeng.com/)、[vue](https://cn.vuejs.org/index.html)、[vuex](https://vuex.vuejs.org/zh-cn/)、[vue-router](https://router.vuejs.org/zh-cn/) 、[vue-cli](https://github.com/vuejs/vue-cli) 、[axios](https://github.com/axios/axios) 和 [element-ui](https://github.com/ElemeFE/element)，所有的请求数据都使用[springboot-link-admin](https://github.com/252956/springboot-link-admin) 获取，提前了解和学习这些知识会对使用本项目有很大的帮助。
 
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941350x1033347913.png">
+  <img width="900" src="https://img-blog.csdnimg.cn/20190920093128360.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ1MjUyMjg=,size_16,color_FFFFFF,t_70">
 </p>
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941424x1033347913.png">
+  <img width="900" src="https://img-blog.csdnimg.cn/20190920093201701.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ1MjUyMjg=,size_16,color_FFFFFF,t_70">
 </p>
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941477x1031866013.png">
+  <img width="900" src="https://img-blog.csdnimg.cn/20190920093218612.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ1MjUyMjg=,size_16,color_FFFFFF,t_70">
 </p>
  <p align="center">
-  <img width="900" src="http://chuantu.xyz/t6/702/1568941181x2890202733.png">
+  <img width="900" src="https://img-blog.csdnimg.cn/20190920093232697.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQ1MjUyMjg=,size_16,color_FFFFFF,t_70">
 </p>
 
 
