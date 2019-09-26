@@ -15,7 +15,7 @@
             <span>{{ node.label }}</span>
             <span>
               <el-button type="text" size="mini" @click="() => handleCreate(data)" v-permission="['/rest/department/add']">添加</el-button>
-              <el-button type="text" size="mini" @click="() => handleEdit(node,data)" v-permission="['/rest/department/update']">修改</el-button>
+              <el-button type="text" size="mini" @click="() => handleEdit(node,data)" v-permission="['/rest/department/update']">编辑</el-button>
               <el-button type="text" size="mini" @click="() => handleDelete(data)" v-permission="['/rest/department/delete']">删除</el-button>
             </span>
           </span>

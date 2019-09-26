@@ -214,7 +214,7 @@ export default {
     formatState(row, column) {
       var val = "";
       if (row.state == 1) {
-        val = "正常";
+        val = "启用";
       } else {
         val = "禁用";
       }
