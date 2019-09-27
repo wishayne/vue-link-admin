@@ -152,6 +152,30 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/logs',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'LogPages',
+    meta: {
+      title: '业务日志',
+      icon: 'bug'
+    },
+    children: [
+      {
+        path: '/logs/blog',
+        component: () => import('@/views/logs/blog'),
+        name: 'Blog',
+        meta: { title: '业务日志', noCache: true }
+      },
+      {
+        path: '/logs/error-log',
+        component: () => import('@/views/logs/error-log'),
+        name: 'ErrorLog',
+        meta: { title: '错误日志', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/error',
     component: Layout,
     redirect: 'noRedirect',
@@ -172,18 +196,6 @@ export const asyncRoutes = [
         component: () => import('@/views/error-page/404'),
         name: 'Page404',
         meta: { title: '404', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/error-log',
-    component: Layout,
-    children: [
-      {
-        path: '/error-log',
-        component: () => import('@/views/error-log/index'),
-        name: 'ErrorLog',
-        meta: { title: '错误日志', icon: 'bug' }
       }
     ]
   },

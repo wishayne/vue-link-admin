@@ -55,7 +55,12 @@
       <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button @click="handleEdit(scope)" type="text" size="small" v-permission="['/rest/user/update']">编辑</el-button>
+          <el-button
+            @click="handleEdit(scope)"
+            type="text"
+            size="small"
+            v-permission="['/rest/user/update']"
+          >编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -132,7 +137,7 @@
   </div>
 </template>
 <script>
-import permission from '@/directive/permission/index.js' // 权限判断指令
+import permission from "@/directive/permission/index.js"; // 权限判断指令
 import { userList, addUser, updateUser } from "@/api/permission/user";
 import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
@@ -165,7 +170,7 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
-      listLoading: true,
+      listLoading: false,
       listQuery: {
         page: 1,
         limit: 10,
@@ -196,10 +201,15 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true;
-      const res = await userList(this.listQuery);
-      this.listLoading = false;
-      this.list = res.result.rows;
-      this.total = res.result.records;
+      //If the Promise is rejected, the rejected value is thrown.
+      try {
+        const res = await userList(this.listQuery);
+        this.listLoading = false;
+        this.list = res.result.rows;
+        this.total = res.result.records;
+      } catch (e) {
+        this.listLoading = false;
+      }
     },
     handleSearch() {
       this.getList();

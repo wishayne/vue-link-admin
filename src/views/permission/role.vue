@@ -38,8 +38,18 @@
 
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope)" v-permission="['/rest/role/update']">编辑</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)" v-permission="['/rest/role/delete']">删除</el-button>
+          <el-button
+            type="primary"
+            size="small"
+            @click="handleEdit(scope)"
+            v-permission="['/rest/role/update']"
+          >编辑</el-button>
+          <el-button
+            type="danger"
+            size="small"
+            @click="handleDelete(scope)"
+            v-permission="['/rest/role/delete']"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -83,8 +93,13 @@
   </div>
 </template>
 <script>
-import permission from '@/directive/permission/index.js' // 权限判断指令
-import { roleList, addRole, updateRole, deleteRole } from "@/api/permission/role";
+import permission from "@/directive/permission/index.js"; // 权限判断指令
+import {
+  roleList,
+  addRole,
+  updateRole,
+  deleteRole
+} from "@/api/permission/role";
 import { permissions, permissionsByRole } from "@/api/permission/permission";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import { deepClone } from "@/utils";
@@ -104,7 +119,7 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
-      listLoading: true,
+      listLoading: false,
       listQuery: {
         page: 1,
         limit: 10,
@@ -127,13 +142,17 @@ export default {
     this.getPermissions();
   },
   methods: {
-    getList() {
+    async getList() {
       this.listLoading = true;
-      roleList(this.listQuery).then(res => {
+      //If the Promise is rejected, the rejected value is thrown.
+      try {
+        const res = await roleList(this.listQuery);
         this.listLoading = false;
         this.list = res.result.rows;
         this.total = res.result.records;
-      });
+      } catch (e) {
+        this.listLoading = false;
+      }
     },
     async getPermissions() {
       const res = await permissions();
