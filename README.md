@@ -12,16 +12,16 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
 你需要在本地安装 [node](http://nodejs.org/) 和 [git](https://git-scm.com/)。本项目技术栈基于 [ES2015+](http://es6.ruanyifeng.com/)、[vue](https://cn.vuejs.org/index.html)、[vuex](https://vuex.vuejs.org/zh-cn/)、[vue-router](https://router.vuejs.org/zh-cn/) 、[vue-cli](https://github.com/vuejs/vue-cli) 、[axios](https://github.com/axios/axios) 和 [element-ui](https://github.com/ElemeFE/element)，所有的请求数据都使用[springboot-link-admin](https://github.com/252956/springboot-link-admin) 获取，提前了解和学习这些知识会对使用本项目有很大的帮助。
 
  <p align="center">
-  <img width="900" src="https://raw.githubusercontent.com/252956/web-site/master/docs/img/1.png">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/blob/master/src/assets/websit/1.png">
 </p>
  <p align="center">
-  <img width="900" src="https://raw.githubusercontent.com/252956/web-site/master/docs/img/2.png">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/blob/master/src/assets/websit/2.png">
 </p>
  <p align="center">
-  <img width="900" src="https://raw.githubusercontent.com/252956/web-site/master/docs/img/3.png">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/blob/master/src/assets/websit/3.png">
 </p>
  <p align="center">
-  <img width="900" src="https://raw.githubusercontent.com/252956/web-site/master/docs/img/4.png">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/blob/master/src/assets/websit/4.png">
 </p>
 
 
