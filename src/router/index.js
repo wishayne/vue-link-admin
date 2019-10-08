@@ -104,6 +104,24 @@ export const constantRoutes = [
  */
 export const asyncRoutes = [
   {
+    path: '/video',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'Video',
+    meta: {
+      title: '视频+',
+      icon: 'video'
+    },
+    children: [
+      {
+        path: '/video/tiktok',
+        component: () => import('@/views/video/tiktok'),
+        name: 'TikTok',
+        meta: { title: '抖音视频', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/permission',
     component: Layout,
     name: 'Permission',
@@ -207,7 +225,7 @@ export const asyncRoutes = [
         path: '/documentation',
         component: () => import('@/views/documentation/index'),
         name: 'Documentation',
-        meta: { title: '文档', icon: 'documentation'}
+        meta: { title: '文档', icon: 'documentation' }
       }
     ]
   },
