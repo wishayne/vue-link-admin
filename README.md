@@ -6,8 +6,8 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
 
 本项目后端接口[springboot-link-admin](https://github.com/252956/springboot-link-admin) 
 
-备注：如果本地没有启动后端接口，可用下面免费公用接口获取数据，只需要把请求路径改为下面地址
-.env.development地址改为      VUE_APP_BASE_API_URL='http://47.103.154.36:8888'
+备注：如果本地没有启动后端接口，可用下面免费公用接口获取数据，修改
+.env.development 文件      VUE_APP_BASE_API_URL='http://47.103.154.36:8888'
 
 
 ## 前序准备
