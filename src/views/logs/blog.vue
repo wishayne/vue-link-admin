@@ -78,7 +78,7 @@ import permission from "@/directive/permission/index.js"; // 权限判断指令
 import { blogList } from "@/api/logs/blog";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import { getDateTime, formatDateTime } from "@/utils";
-
+const nowDateTime=getDateTime();
 export default {
   name: "Blog",
   components: { Pagination },
@@ -92,14 +92,14 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        starttime: getDateTime(),
-        endtime: getDateTime(),
+        starttime: nowDateTime,
+        endtime: nowDateTime,
         loginuser: ""
       }
     };
   },
   created() {
-    //this.getList();
+    this.getList();
   },
   methods: {
     async getList() {

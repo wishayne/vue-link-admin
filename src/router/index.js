@@ -23,7 +23,6 @@ import nestedRouter from './modules/nested'
  * redirect: noRedirect           if set noRedirect will no redirect in the breadcrumb
  * name:'router-name'             the name is used by <keep-alive> (must set!!!)
  * meta : {
-    roles: ['admin','editor']    control the page roles (you can set multiple roles)
     title: 'title'               the name show in sidebar and breadcrumb (recommend set)
     icon: 'svg-name'             the icon show in the sidebar
     noCache: true                if set true, the page will no be cached(default is false)
@@ -127,8 +126,7 @@ export const asyncRoutes = [
     name: 'Permission',
     meta: {
       title: '系统权限',
-      icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
+      icon: 'lock'
     },
     children: [
       {
@@ -136,8 +134,7 @@ export const asyncRoutes = [
         component: () => import('@/views/permission/user'),
         name: 'User',
         meta: {
-          title: '用户管理',
-          roles: ['admin'] // or you can only set roles in sub nav
+          title: '用户管理'
         }
       },
       {
@@ -145,8 +142,7 @@ export const asyncRoutes = [
         component: () => import('@/views/permission/role'),
         name: 'Role',
         meta: {
-          title: '角色权限',
-          roles: ['admin']
+          title: '角色权限'
         }
       },
       {
@@ -155,7 +151,6 @@ export const asyncRoutes = [
         name: 'Permission',
         meta: {
           title: '权限管理'
-          // if do not set roles, means: this page does not require permission
         }
       },
       {
@@ -164,7 +159,6 @@ export const asyncRoutes = [
         name: 'Department',
         meta: {
           title: '部门管理'
-          // if do not set roles, means: this page does not require permission
         }
       }
     ]
@@ -172,8 +166,7 @@ export const asyncRoutes = [
   {
     path: '/logs',
     component: Layout,
-    redirect: 'noRedirect',
-    name: 'LogPages',
+    name: 'Logs',
     meta: {
       title: '业务日志',
       icon: 'bug'
@@ -183,13 +176,13 @@ export const asyncRoutes = [
         path: '/logs/blog',
         component: () => import('@/views/logs/blog'),
         name: 'Blog',
-        meta: { title: '业务日志', noCache: true }
+        meta: { title: '业务日志' }
       },
       {
         path: '/logs/error-log',
         component: () => import('@/views/logs/error-log'),
         name: 'ErrorLog',
-        meta: { title: '错误日志', noCache: true }
+        meta: { title: '错误日志' }
       }
     ]
   },
@@ -207,13 +200,13 @@ export const asyncRoutes = [
         path: '/error/401',
         component: () => import('@/views/error-page/401'),
         name: 'Page401',
-        meta: { title: '401', noCache: true }
+        meta: { title: '401'}
       },
       {
         path: '/error/404',
         component: () => import('@/views/error-page/404'),
         name: 'Page404',
-        meta: { title: '404', noCache: true }
+        meta: { title: '404' }
       }
     ]
   },
