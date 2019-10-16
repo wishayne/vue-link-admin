@@ -23,6 +23,12 @@ vue-link-admin 基于[vue-element-admin](https://panjiachen.github.io/vue-elemen
  <p align="center">
   <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/master/src/assets/websit/4.png">
 </p>
+ <p align="center">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/master/src/assets/websit/5.png">
+</p>
+ <p align="center">
+  <img width="900" src="https://raw.githubusercontent.com/252956/vue-link-admin/master/src/assets/websit/6.png">
+</p>
 
 
 ## 开发
