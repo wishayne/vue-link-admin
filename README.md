@@ -61,3 +61,9 @@ npm start
 # 构建生产环境
 npm run build
 
+## 加入讨论组
+
+ <p align="center">
+  <img width="300" src="https://raw.githubusercontent.com/252956/vue-link-admin/master/src/assets/websit/2.png">
+</p>
+
