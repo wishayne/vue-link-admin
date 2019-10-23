@@ -1,77 +1,101 @@
 <template>
   <div class="app-container">
-    <div class="filter-container" style="margin-top:30px;">
-      <el-input
-        v-model="listQuery.name"
-        placeholder="账号"
-        style="width: 200px;"
-        class="filter-item"
-      />
-      <el-input
-        v-model="listQuery.vserName"
-        placeholder="真实姓名"
-        style="width: 200px;"
-        class="filter-item"
-      />
-      <el-input
-        v-model="listQuery.deptName"
-        placeholder="部门"
-        style="width: 200px;"
-        class="filter-item"
-      />
-
-      <el-button
-        class="filter-item"
-        type="primary"
-        icon="el-icon-search"
-        @click="handleSearch"
-        v-permission="['/rest/user/list']"
-      >查找</el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-        v-permission="['/rest/user/add']"
-      >新增</el-button>
+    <div style="margin-top:20px;margin-bottom: 20px">
+      <el-row :gutter="10">
+        <el-col :span="4">
+          <el-input v-model="listQuery.name" placeholder="账号" />
+        </el-col>
+        <el-col :span="4">
+          <el-input v-model="listQuery.vserName" placeholder="真实姓名" />
+        </el-col>
+        <el-col :span="4">
+          <el-select v-model="listQuery.state" placeholder="用户状态" clearable>
+            <el-option
+              v-for="item  in stateOptions"
+              :key="item.key"
+              :label="item.label"
+              :value="item.key"
+            />
+          </el-select>
+        </el-col>
+        <el-col :span="4">
+          <treeselect
+            v-model="listQuery.deptid"
+            :options="departments"
+            :normalizer="normalizer"
+            placeholder="请输入部门名称"
+          />
+        </el-col>
+        <el-col :span="8">
+          <el-button
+            class="filter-item"
+            type="primary"
+            icon="el-icon-search"
+            @click="handleSearch"
+            v-permission="['/rest/user/list']"
+          >查找</el-button>
+          <el-button
+            class="filter-item"
+            style="margin-left: 10px;"
+            type="primary"
+            icon="el-icon-edit"
+            @click="handleCreate"
+            v-permission="['/rest/user/add']"
+          >新增</el-button>
+        </el-col>
+      </el-row>
     </div>
 
-    <el-table
-      :key="tableKey"
-      :data="list"
-      v-loading="listLoading"
-      border
-      style="width: 100%;"
-      height="450"
-    >
-      <el-table-column prop="name" label="账号" width="120"></el-table-column>
-      <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
-      <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
-      <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
-      <el-table-column prop="state" label="状态" width="80" :formatter="formatState"></el-table-column>
-      <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
-      <el-table-column prop="companyName" label="公司" width="120"></el-table-column>
-      <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
-      <el-table-column label="操作">
-        <template slot-scope="scope">
-          <el-button
-            @click="handleEdit(scope)"
-            type="text"
-            size="small"
-            v-permission="['/rest/user/update']"
-          >编辑</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
-      @pagination="getList"
-    />
+    <div>
+      <el-table
+        :key="tableKey"
+        :data="list"
+        v-loading="listLoading"
+        style="width: 100%;"
+        height="450"
+        border
+      >
+        <el-table-column width="50">
+          <template slot-scope="scope">
+            <span>{{scope.$index+(listQuery.page - 1) * listQuery.limit + 1}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="账号" width="120"></el-table-column>
+        <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
+        <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
+        <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
+        <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+        <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
 
+        <el-table-column label="禁用/启用" width="85">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.state"
+              :active-value="1"
+              :inactive-value="0"
+              @change="handleStateChange(scope.row)"
+            ></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <el-button
+              @click="handleEdit(scope)"
+              type="text"
+              size="small"
+              v-permission="['/rest/user/update']"
+            >编辑</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination
+        v-show="total>0"
+        :total="total"
+        :page.sync="listQuery.page"
+        :limit.sync="listQuery.limit"
+        @pagination="getList"
+      />
+    </div>
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="user" label-width="80px" label-position="left" style="height: 410px;">
         <el-tabs v-model="activeName">
@@ -137,8 +161,17 @@
   </div>
 </template>
 <script>
+// import the component
+import Treeselect from "@riophae/vue-treeselect";
+// import the styles
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import permission from "@/directive/permission/index.js"; // 权限判断指令
-import { userList, addUser, updateUser } from "@/api/permission/user";
+import {
+  userList,
+  addUser,
+  updateUser,
+  updateState
+} from "@/api/permission/user";
 import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
 import { deepCloneAttributes } from "@/utils";
@@ -150,15 +183,16 @@ const defaultUser = {
   password: "",
   vserName: "",
   mobile: "",
-  state: 0,
+  state: undefined,
   email: "",
-  deptid: -1,
+  deptid: undefined,
   deptName: "",
   roleIds: []
 };
+
 export default {
   name: "User",
-  components: { Pagination },
+  components: { Pagination, Treeselect },
   directives: { permission },
   data() {
     return {
@@ -177,8 +211,11 @@ export default {
         vserName: "",
         name: "",
         mobile: "",
-        deptName: ""
+        deptid: undefined,
+        deptName: "",
+        state: undefined
       },
+      searchDeptName: "",
       user: Object.assign({}, defaultUser),
       defaultProps: {
         children: "childrens",
@@ -197,6 +234,11 @@ export default {
     this.getList();
     this.getDepartments();
     this.getRoles();
+  },
+  watch: {
+    searchDeptName(val) {
+      this.$refs.serchDeptTree.filter(val);
+    }
   },
   methods: {
     async getList() {
@@ -221,14 +263,36 @@ export default {
       });
       return roleNames.join(" , ");
     },
-    formatState(row, column) {
-      var val = "";
-      if (row.state == 1) {
-        val = "启用";
-      } else {
-        val = "禁用";
-      }
-      return val;
+    normalizer(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.childrens
+      };
+    },
+    // 用户状态修改
+    handleStateChange(row) {
+      let text = row.state == 1 ? "启用" : "停用";
+      this.$confirm(
+        "确认要 [" + text + "] [" + row.name + "] 用户吗?",
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      )
+        .then(async () => {
+          await updateState({ uid: row.uid, state: row.state });
+          this.$message({
+            message: text + "成功",
+            type: "success"
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          row.state = row.state == 0 ? 1 : 0;
+        });
     },
     async getDepartments() {
       const res = await departments();
@@ -284,7 +348,15 @@ export default {
         type: "success"
       });
       this.getList();
+    },
+    // 节点单击事件
+    treeSearchChange(node) {
+      this.isShowSelect = false;
+      this.listQuery.deptid = node.id;
+      this.getList();
     }
   }
 };
 </script>
+<style lang="scss">
+</style>

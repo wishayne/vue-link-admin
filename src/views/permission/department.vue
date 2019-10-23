@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form label-width="120px" label-position="left" style="margin-top:30px;width:550px">
+    <el-form label-width="120px" label-position="left" style="margin-top:20px;width:550px">
       <el-form-item>
         <el-tree
           ref="tree"
@@ -30,7 +30,7 @@
         <el-form-item label="部门名">
           <el-input v-model="department.name" placeholder="部门名" />
         </el-form-item>
-        <el-form-item label="级别">
+        <!-- <el-form-item label="级别">
           <el-select v-model="department.levels" style="width: 140px" class="filter-item">
             <el-option
               v-for="item in levelsOptions"
@@ -39,7 +39,7 @@
               :value="item.key"
             />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="排序">
           <el-input v-model="department.sorts" placeholder="排序" />
         </el-form-item>

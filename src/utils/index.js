@@ -1,5 +1,5 @@
 /**
- * Created by PanJiaChen on 16/11/18.
+ * Created by 252956 on 2019/10/21.
  */
 /**
  * 返回当前日期:yyyy-MM-dd
@@ -9,6 +9,7 @@ export function getDate() {
   var dt = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
   return dt
 }
+
 /**
  * 返回当前日期:yyyy-MM-dd HH:mm:ss
  */
@@ -18,23 +19,71 @@ export function getDateTime() {
   return dt
 }
 /**
+ * 偏移分钟
+ *
+ * @param date
+ *            日期
+ * @param offset
+ *            偏移小时数，正数向未来偏移，负数向历史偏移
+ * @return 偏移后的日期
+ */
+export function offsetMinute(shijianchuo, offset) {
+  // eslint-disable-next-line eqeqeq
+  if (shijianchuo == 0 || shijianchuo == '' || shijianchuo == null) {
+    return ''
+  }
+  var time = new Date(shijianchuo)
+  time = new Date(time.valueOf() + offset * 60 * 1000)
+  var y = time.getFullYear()
+  var m = time.getMonth() + 1
+  var d = time.getDate()
+  var h = time.getHours()
+  var mm = time.getMinutes()
+  var s = time.getSeconds()
+  return y + '-' + add0(m) + '-' + add0(d) + ' ' + add0(h) + ':' + add0(mm) + ':' + add0(s)
+}
+
+/**
  * 格式化时间为： yyyy-MM-dd
  * @param {*} date 对象或时间戳
  */
-export function formatDate(date) {
-  var t = new Date(date)
-  var dt = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate()
-  return dt
+export function formatDate(shijianchuo) {
+  // eslint-disable-next-line eqeqeq
+  if (shijianchuo == 0 || shijianchuo == '' || shijianchuo == null) {
+    return ''
+  }
+  var time = new Date(shijianchuo)
+  var y = time.getFullYear()
+  var m = time.getMonth() + 1
+  var d = time.getDate()
+
+  return y + '-' + add0(m) + '-' + add0(d)
 }
 
 /**
  * 格式化时间为： yyyy-MM-dd HH:mm:ss
  * @param {*} date 对象或时间戳
  */
-export function formatDateTime(date) {
-  var t = new Date(date)
-  var dt = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate() + ' ' + t.getHours() + ':' + t.getMinutes() + ':' + t.getSeconds()
-  return dt
+export function formatDateTime(shijianchuo) {
+  // eslint-disable-next-line eqeqeq
+  if (shijianchuo == 0 || shijianchuo == '' || shijianchuo == null) {
+    return ''
+  }
+  var time = new Date(shijianchuo)
+  var y = time.getFullYear()
+  var m = time.getMonth() + 1
+  var d = time.getDate()
+  var h = time.getHours()
+  var mm = time.getMinutes()
+  var s = time.getSeconds()
+  return y + '-' + add0(m) + '-' + add0(d) + ' ' + add0(h) + ':' + add0(mm) + ':' + add0(s)
+}
+
+/*
+  * 时间戳转时间内部调用
+  */
+var add0 = function (m) {
+  return m < 10 ? '0' + m : m
 }
 
 /**

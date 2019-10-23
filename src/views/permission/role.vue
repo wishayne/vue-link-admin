@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="filter-container" style="margin-top:30px;">
+    <div class="filter-container" style="margin-top:20px;">
       <el-input
         v-model="listQuery.name"
         placeholder="角色名"
@@ -60,7 +60,7 @@
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'" >
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="角色名">
           <el-input v-model="role.name" placeholder="角色名" />

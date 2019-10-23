@@ -53,3 +53,11 @@ export function updateUser(data) {
     data
   })
 }
+
+export function updateState(data) {
+  return request({
+    url: '/rest/user/updateState',
+    method: 'post',
+    data
+  })
+}
