@@ -38,3 +38,19 @@ export function deleteRole(id) {
     params: { id }
   })
 }
+
+export function saveDataScope(data) {
+  return request({
+    url: `/rest/role/saveDataScope`,
+    method: 'post',
+    data
+  })
+}
+
+export function queryDataScope(id) {
+  return request({
+    url: `/rest/role/queryDataScope`,
+    method: 'get',
+    params: { id }
+  })
+}

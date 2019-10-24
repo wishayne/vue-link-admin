@@ -19,10 +19,11 @@
         class="filter-item"
         style="margin-left: 10px;"
         type="primary"
-        icon="el-icon-edit"
         @click="handleCreate"
         v-permission="['/rest/role/add']"
-      >新增</el-button>
+      >
+        <i class="el-icon-plus" /> 新增
+      </el-button>
     </div>
 
     <el-table
@@ -34,18 +35,26 @@
       height="450"
     >
       <el-table-column prop="name" label="角色名"></el-table-column>
+      <!-- <el-table-column prop="levels" label="级别"></el-table-column> -->
+      <el-table-column prop="data_scope" label="数据权限" :formatter="formatDataScope"></el-table-column>
       <el-table-column prop="description" label="描述"></el-table-column>
 
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button
-            type="primary"
+            size="small"
+            type="text"
+            @click="handleDataScope(scope.row)"
+            v-permission="['/rest/role/saveDataScope']"
+          >数据权限</el-button>
+          <el-button
+            type="text"
             size="small"
             @click="handleEdit(scope)"
             v-permission="['/rest/role/update']"
           >编辑</el-button>
           <el-button
-            type="danger"
+            type="text"
             size="small"
             @click="handleDelete(scope)"
             v-permission="['/rest/role/delete']"
@@ -60,7 +69,7 @@
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'" >
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="角色名">
           <el-input v-model="role.name" placeholder="角色名" />
@@ -79,6 +88,7 @@
             :check-strictly="checkStrictly"
             :data="permissions"
             :props="defaultProps"
+             default-expand-all
             show-checkbox
             node-key="id"
             class="permission-tree"
@@ -90,6 +100,39 @@
         <el-button type="primary" @click="confirmRole">确定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 分配角色数据权限对话框 -->
+    <el-dialog :title="'分配数据权限'" :visible.sync="dataScopeDialogVisible" width="500px">
+      <el-form :model="role" label-width="80px">
+        <el-form-item label="角色名称">{{role.name}}</el-form-item>
+        <el-form-item label="权限范围">
+          <el-select v-model="role.data_scope">
+           
+            <el-option
+              v-for="item in dataScopes"
+              :key="item.data_key"
+              :label="item.data_value"
+              :value="item.data_key"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="数据权限" v-show="role.data_scope == 1">
+          <el-tree
+            :data="departments"
+            show-checkbox
+            default-expand-all
+            ref="deptTree"
+            node-key="id"
+            empty-text="加载中，请稍后"
+            :props="defaultProps"
+          ></el-tree>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="danger" @click="dataScopeDialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="submitDataScope">确定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -98,17 +141,23 @@ import {
   roleList,
   addRole,
   updateRole,
-  deleteRole
+  deleteRole,
+  saveDataScope,
+  queryDataScope
 } from "@/api/permission/role";
 import { permissions, permissionsByRole } from "@/api/permission/permission";
+import { departments } from "@/api/permission/department";
+import { dictInfo } from "@/api/permission/dict";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
-import { deepClone } from "@/utils";
+import { deepClone, deepCloneAttributes } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultRole = {
-  id: "",
+  id: undefined,
   name: "",
   description: "",
-  permIds: ""
+  permIds: "",
+  data_scope: "",
+  deptIds: []
 };
 export default {
   name: "Role",
@@ -134,12 +183,17 @@ export default {
         label: "name"
       },
       permissions: [],
-      permissionsByRole: []
+      permissionsByRole: [],
+      dataScopeDialogVisible: false,
+      departments: [],
+      dataScopes: []
     };
   },
   created() {
     this.getList();
     this.getPermissions();
+    this.getDepartments();
+    this.getDataScopes();
   },
   methods: {
     async getList() {
@@ -154,6 +208,16 @@ export default {
         this.listLoading = false;
       }
     },
+    formatDataScope(row, column) {
+      var val = "";
+      for (var item of this.dataScopes) {
+        if (item.data_key == row.data_scope) {
+          val = item.data_value;
+          break;
+        }
+      }
+      return val;
+    },
     async getPermissions() {
       const res = await permissions();
       this.permissions = res.result;
@@ -163,6 +227,14 @@ export default {
       const res = await permissionsByRole(roleId);
       this.permissionsByRole = res.result;
       //this.routes = this.generateRoutes(res.data);
+    },
+    async getDataScopes() {
+      const res = await dictInfo("data_scope");
+      this.dataScopes = res.result;
+    },
+    async getDepartments() {
+      const res = await departments();
+      this.departments = res.result;
     },
     handleSearch() {
       this.getList();
@@ -240,6 +312,35 @@ export default {
         .catch(err => {
           console.error(err);
         });
+    },
+    async setCheckDeptTree(roleId) {
+      const res = await queryDataScope(roleId);
+      this.$refs.deptTree.setCheckedKeys(res.result);
+    },
+    handleDataScope(row) {
+      deepCloneAttributes(this.role, row);
+      if (this.$refs.deptTree) {
+        this.$refs.deptTree.setCheckedKeys([]);
+      }
+      if (row.data_scope == 1) {
+        this.setCheckDeptTree(row.id);
+      }
+      this.dataScopeDialogVisible = true;
+    },
+    /** 提交按钮（数据权限） */
+    async submitDataScope() {
+      if (this.role.id) {
+        this.role.deptIds = this.$refs.deptTree
+          .getCheckedKeys();
+        await saveDataScope(this.role);
+        this.dataScopeDialogVisible = false;
+        this.$message({
+          showClose: true,
+          message: "操作成功",
+          type: "success"
+        });
+        this.getList();
+      }
     }
   }
 };

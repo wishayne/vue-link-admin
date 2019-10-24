@@ -154,29 +154,52 @@ export const asyncRoutes = [
         meta: {
           title: '部门管理'
         }
+      },
+      {
+        path: '/permission/dict',
+        component: () => import('@/views/permission/dict'),
+        name: 'Blog',
+        meta: { title: '数据字典', noCache: true }
       }
     ]
   },
   {
-    path: '/logs',
+    path: '/monitor',
     component: Layout,
-    name: 'Logs',
+    name: 'Monitor',
     meta: {
-      title: '业务日志',
-      icon: 'bug'
+      title: '系统监控',
+      icon: 'monitor'
     },
     children: [
       {
-        path: '/logs/blog',
-        component: () => import('@/views/logs/blog'),
+        path: '/monitor/blog',
+        component: () => import('@/views/monitor/blog'),
         name: 'Blog',
         meta: { title: '业务日志', noCache: true }
       },
       {
-        path: '/logs/error-log',
-        component: () => import('@/views/logs/error-log'),
+        path: '/monitor/error-log',
+        component: () => import('@/views/monitor/error-log'),
         name: 'ErrorLog',
         meta: { title: '错误日志', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/system',
+    component: Layout,
+    name: 'System',
+    meta: {
+      title: '系统管理',
+      icon: 'bug'
+    },
+    children: [
+      {
+        path: '/system/notice',
+        component: () => import('@/views/error-page/404'),
+        name: 'ErrorLog',
+        meta: { title: '通知公告', noCache: true }
       }
     ]
   },

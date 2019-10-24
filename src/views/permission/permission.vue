@@ -1,31 +1,65 @@
 <template>
   <div class="app-container">
-    <el-form label-width="120px" label-position="left" style="margin-top:20px;width:550px">
-      <el-form-item>
-        <el-tree
-          ref="tree"
-          :data="permissions"
-          :props="defaultProps"
-          node-key="id"
-          class="permission-tree"
-          default-expand-all
-          :expand-on-click-node="false"
-        >
-          <span class="custom-tree-node" slot-scope="{ node, data }">
-            <span>{{ node.label }}</span>
-            <span>
-              <el-button type="text" size="mini" @click="() => handleCreate(data)" v-permission="['/rest/permission/add']">添加</el-button>
-              <el-button type="text" size="mini" @click="() => handleEdit(node,data)" v-permission="['/rest/permission/add']">编辑</el-button>
-              <el-button type="text" size="mini" @click="() => handleDelete(data)" v-permission="['/rest/permission/add']">删除</el-button>
+    <div style="margin-top:20px;max-width:600px;margin-left: 80px;">
+      <el-row :gutter="20">
+        <el-col :span="20">
+          <el-input placeholder="输入关键字进行过滤" v-model="filterText" clearable></el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-button class="filter-item" type="primary" @click="() => handleCreate()">
+            <i class="el-icon-plus" /> 添加
+          </el-button>
+        </el-col>
+      </el-row>
+      <el-row style="padding-top:20px">
+        <el-col>
+          <el-tree
+            ref="tree"
+            :data="permissions"
+            :props="defaultProps"
+            node-key="id"
+            class="permission-tree"
+            default-expand-all
+            :expand-on-click-node="false"
+            :filter-node-method="filterNode"
+          >
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+              <span>{{ node.label }}</span>
+              <span>
+                <el-button
+                  type="text"
+                  size="mini"
+                  @click="() => handleCreate(data)"
+                  v-permission="['/rest/permission/add']"
+                >添加</el-button>
+                <el-button
+                  type="text"
+                  size="mini"
+                  @click="() => handleEdit(node,data)"
+                  v-permission="['/rest/permission/update']"
+                >编辑</el-button>
+                <el-button
+                  type="text"
+                  size="mini"
+                  @click="() => handleDelete(data)"
+                  v-permission="['/rest/permission/delete']"
+                >删除</el-button>
+              </span>
             </span>
-          </span>
-        </el-tree>
-      </el-form-item>
-    </el-form>
+          </el-tree>
+        </el-col>
+      </el-row>
+    </div>
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="permission" label-width="80px" label-position="left">
         <el-form-item label="上级权限">
           <span>{{permission.parentName}}</span>
+          <treeselect
+            v-model="permission.parentId"
+            :options="permissions"
+            :normalizer="normalizer"
+            placeholder="选择上级部门"
+          />
         </el-form-item>
         <el-form-item label="权限名">
           <el-input v-model="permission.name" placeholder="权限名" />
@@ -55,7 +89,11 @@
   </div>
 </template>
 <script>
-import permission from '@/directive/permission/index.js' // 权限判断指令
+// import the component
+import Treeselect from "@riophae/vue-treeselect";
+// import the styles
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import permission from "@/directive/permission/index.js"; // 权限判断指令
 import {
   permissions,
   addPermission,
@@ -65,16 +103,17 @@ import {
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultPermission = {
-  id: "",
+  id: undefined,
   name: "",
-  parentId: "",
+  parentId: undefined,
   parentName: "",
   url: "",
   types: "",
-  sorts: ""
+  sorts: undefined
 };
 export default {
   name: "Permission",
+  components: { Treeselect },
   directives: { permission },
   data() {
     return {
@@ -86,23 +125,54 @@ export default {
       permissions: [],
       dialogVisible: false,
       dialogType: "new",
-      typesOptions: [{ label: "菜单", key: 0 }, { label: "功能权限", key: 1 }]
+      typesOptions: [{ label: "菜单", key: 0 }, { label: "功能权限", key: 1 }],
+      filterText: ""
     };
   },
   created() {
     this.getPermissions();
   },
+  watch: {
+    filterText(val) {
+      this.$refs.tree.filter(val);
+    }
+  },
   methods: {
     async getPermissions() {
       const res = await permissions();
-      this.permissions = [{ id: 0, name: "权限树", childrens: res.result }];
+      let result = res.result;
+      this.diGuiTree(result);
+      this.permissions = [{ id: 0, name: "权限树", childrens: result }];
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.name.indexOf(value) !== -1;
+    },
+    diGuiTree(item) {
+      //递归便利树结构
+      item.forEach(item => {
+        item.childrens === "" ||
+        item.childrens === undefined ||
+        item.childrens === null
+          ? delete item.childrens
+          : this.diGuiTree(item.childrens);
+      });
+    },
+    normalizer(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.childrens
+      };
     },
     handleCreate(data) {
       this.dialogType = "new";
       this.dialogVisible = true;
       this.permission = Object.assign({}, defaultPermission);
-      this.permission.parentId = data.id;
-      this.permission.parentName = data.name;
+      if (data != null) {
+        this.permission.parentId = data.id;
+        this.permission.parentName = data.name;
+      }
     },
 
     async handleEdit(node, data) {

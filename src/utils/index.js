@@ -305,12 +305,10 @@ export function deepCloneAttributes(target, source) {
     throw new Error('error arguments', 'deepCloneAttributes')
   }
   Object.keys(target).forEach(keys => {
-    if (source[keys]) {
-      if (target[keys] && typeof target[keys] === 'object') {
-        target[keys] = deepCloneAttributes(target[keys], source[keys])
-      } else {
-        target[keys] = source[keys]
-      }
+    if (target[keys] && typeof target[keys] === 'object') {
+      target[keys] = deepCloneAttributes(target[keys], source[keys])
+    } else {
+      target[keys] = source[keys]
     }
   })
 }

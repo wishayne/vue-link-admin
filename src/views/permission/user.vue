@@ -38,10 +38,11 @@
             class="filter-item"
             style="margin-left: 10px;"
             type="primary"
-            icon="el-icon-edit"
             @click="handleCreate"
             v-permission="['/rest/user/add']"
-          >新增</el-button>
+          >
+            <i class="el-icon-plus" />新增
+          </el-button>
         </el-col>
       </el-row>
     </div>
@@ -134,9 +135,11 @@
                 :data="departments"
                 :props="defaultProps"
                 :default-expanded-keys="defaultExpandeds"
+                 default-expand-all
                 show-checkbox
                 node-key="id"
                 class="permission-tree"
+                @check="checkDeptTreeNode"
               />
             </el-form-item>
           </el-tab-pane>
@@ -296,7 +299,24 @@ export default {
     },
     async getDepartments() {
       const res = await departments();
-      this.departments = res.result;
+      let result = res.result;
+      this.diGuiTree(result);
+      this.departments = result;
+    },
+    diGuiTree(item) {
+      //递归便利树结构
+      item.forEach(item => {
+        item.childrens === "" ||
+        item.childrens === undefined ||
+        item.childrens === null
+          ? delete item.childrens
+          : this.diGuiTree(item.childrens);
+      });
+    },
+    checkDeptTreeNode(a, b) {
+      if (b.checkedKeys.length > 0) {
+        this.$refs.tree.setCheckedKeys([a.id]);
+      }
     },
     async getRoles() {
       const res = await roles();
