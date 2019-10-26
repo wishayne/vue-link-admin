@@ -1,6 +1,7 @@
 
 import { constantRoutes, asyncRoutes } from '@/router'
 import store from '@/store'
+import { deepClone } from '@/utils'
 
 const state = {
   routes: [],
@@ -17,7 +18,8 @@ const mutations = {
 const actions = {
   generateRoutes({ commit }) {
     return new Promise(resolve => {
-      const accessedRoutes = filterAsyncRoutes(asyncRoutes)
+      var accessedRoutes = deepClone(asyncRoutes)
+      accessedRoutes = filterAsyncRoutes(accessedRoutes)
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })
