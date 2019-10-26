@@ -149,7 +149,7 @@ import { permissions, permissionsByRole } from "@/api/permission/permission";
 import { departments } from "@/api/permission/department";
 import { dictInfo } from "@/api/permission/dict";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
-import { deepClone, deepCloneAttributes } from "@/utils";
+import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultRole = {
   id: undefined,
@@ -318,7 +318,7 @@ export default {
       this.$refs.deptTree.setCheckedKeys(res.result);
     },
     handleDataScope(row) {
-      deepCloneAttributes(this.role, row);
+      this.role=deepClone(row);
       if (this.$refs.deptTree) {
         this.$refs.deptTree.setCheckedKeys([]);
       }

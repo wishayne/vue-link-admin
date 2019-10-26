@@ -32,6 +32,16 @@
           />
         </el-form-item>
         <el-form-item>
+          <el-select v-model="listQuery.state" placeholder="状态" clearable>
+            <el-option
+              v-for="item  in stateOptions"
+              :key="item.key"
+              :label="item.label"
+              :value="item.key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
           <el-button
             class="filter-item"
             type="primary"
@@ -154,10 +164,12 @@ export default {
         limit: 20,
         starttime: offsetMinute(getDateTime(), -160),
         endtime: getDateTime(),
-        loginuser: ""
+        loginuser: "",
+        state: undefined
       },
       dialogVisible: false,
-      blog: {}
+      blog: {},
+      stateOptions: [{ label: "失败", key: 0 }, { label: "成功", key: 1 }]
     };
   },
   created() {

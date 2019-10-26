@@ -53,7 +53,6 @@
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="permission" label-width="80px" label-position="left">
         <el-form-item label="上级权限">
-          <span>{{permission.parentName}}</span>
           <treeselect
             v-model="permission.parentId"
             :options="permissions"
@@ -125,7 +124,7 @@ export default {
       permissions: [],
       dialogVisible: false,
       dialogType: "new",
-      typesOptions: [{ label: "菜单", key: 0 }, { label: "功能权限", key: 1 }],
+      typesOptions: [{ label: "菜单", key: 0 }, { label: "按钮", key: 1 }],
       filterText: ""
     };
   },

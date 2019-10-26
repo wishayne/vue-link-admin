@@ -295,23 +295,23 @@ export function deepClone(source) {
   })
   return targetObj
 }
-/**
- * 深拷贝属性:将source中的属性【并且该属性也在target中】，值赋值给target
- * @param {Object} target
- * @param {Object} source
- */
-export function deepCloneAttributes(target, source) {
-  if (!source && typeof source !== 'object' && !target && typeof target !== 'object') {
-    throw new Error('error arguments', 'deepCloneAttributes')
-  }
-  Object.keys(target).forEach(keys => {
-    if (target[keys] && typeof target[keys] === 'object') {
-      target[keys] = deepCloneAttributes(target[keys], source[keys])
-    } else {
-      target[keys] = source[keys]
-    }
-  })
-}
+// /**
+//  * 深拷贝属性:将source中的属性【并且该属性也在target中】，值赋值给target
+//  * @param {Object} target
+//  * @param {Object} source
+//  */
+// export function deepCloneAttributes(target, source) {
+//   if (!source && typeof source !== 'object' && !target && typeof target !== 'object') {
+//     throw new Error('error arguments', 'deepCloneAttributes')
+//   }
+//   Object.keys(target).forEach(keys => {
+//     if (target[keys] && typeof target[keys] === 'object') {
+//       target[keys] = deepCloneAttributes(target[keys], source[keys])
+//     } else {
+//       target[keys] = source[keys]
+//     }
+//   })
+// }
 
 /**
  * @param {Array} arr

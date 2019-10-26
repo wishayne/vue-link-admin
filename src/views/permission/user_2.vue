@@ -3,20 +3,11 @@
     <div style="margin-top:20px;margin-bottom: 20px">
       <el-row :gutter="10">
         <el-col :span="4">
-          <el-input
-            prefix-icon="el-icon-search"
-            v-model="searchDeptName"
-            placeholder="请输入部门名称"
-            clearable
-          />
-        </el-col>
-        <el-col :span="4">
           <el-input v-model="listQuery.name" placeholder="账号" />
         </el-col>
         <el-col :span="4">
           <el-input v-model="listQuery.vserName" placeholder="真实姓名" />
         </el-col>
-
         <el-col :span="4">
           <el-select v-model="listQuery.state" placeholder="用户状态" clearable>
             <el-option
@@ -26,6 +17,14 @@
               :value="item.key"
             />
           </el-select>
+        </el-col>
+        <el-col :span="4">
+          <treeselect
+            v-model="listQuery.deptid"
+            :options="departments"
+            :normalizer="normalizer"
+            placeholder="请输入部门名称"
+          />
         </el-col>
         <el-col :span="8">
           <el-button
@@ -41,78 +40,62 @@
             type="primary"
             @click="handleCreate"
             v-permission="['/rest/user/add']"
-          > <i class="el-icon-plus" />新增</el-button>
+          >
+            <i class="el-icon-plus" />新增
+          </el-button>
         </el-col>
       </el-row>
     </div>
 
     <div>
-      <el-row>
-        <el-col :span="4">
-          <el-tree
-            ref="serchDeptTree"
-            :data="departments"
-            :props="defaultProps"
-            node-key="id"
-            default-expand-all
-            :expand-on-click-node="false"
-            :filter-node-method="filterNode"
-            class="objectTree"
-            @node-click="handleSearchDeptNode"
-          />
-        </el-col>
+      <el-table
+        :key="tableKey"
+        :data="list"
+        v-loading="listLoading"
+        style="width: 100%;"
+        height="450"
+        border
+      >
+        <el-table-column width="50">
+          <template slot-scope="scope">
+            <span>{{scope.$index+(listQuery.page - 1) * listQuery.limit + 1}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="账号" width="120"></el-table-column>
+        <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
+        <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
+        <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
+        <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+        <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
 
-        <el-col :span="20">
-          <el-table
-            :key="tableKey"
-            :data="list"
-            v-loading="listLoading"
-            style="width: 100%;"
-            height="450"
-            border
-          >
-            <el-table-column width="50">
-              <template slot-scope="scope">
-                <span>{{scope.$index+(listQuery.page - 1) * listQuery.limit + 1}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="name" label="账号" width="120"></el-table-column>
-            <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
-            <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
-            <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
-            <!-- <el-table-column prop="email" label="邮箱" width="180"></el-table-column> -->
-            <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
-
-            <el-table-column label="禁用/启用" width="85">
-              <template slot-scope="scope">
-                <el-switch
-                  v-model="scope.row.state"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="handleStateChange(scope.row)"
-                ></el-switch>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作">
-              <template slot-scope="scope">
-                <el-button
-                  @click="handleEdit(scope)"
-                  type="text"
-                  size="small"
-                  v-permission="['/rest/user/update']"
-                >编辑</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <pagination
-            v-show="total>0"
-            :total="total"
-            :page.sync="listQuery.page"
-            :limit.sync="listQuery.limit"
-            @pagination="getList"
-          />
-        </el-col>
-      </el-row>
+        <el-table-column label="禁用/启用" width="85">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.state"
+              :active-value="1"
+              :inactive-value="0"
+              @change="handleStateChange(scope.row)"
+            ></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <el-button
+              @click="handleEdit(scope)"
+              type="text"
+              size="small"
+              v-permission="['/rest/user/update']"
+            >编辑</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination
+        v-show="total>0"
+        :total="total"
+        :page.sync="listQuery.page"
+        :limit.sync="listQuery.limit"
+        @pagination="getList"
+      />
     </div>
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="user" label-width="80px" label-position="left" style="height: 410px;">
@@ -151,10 +134,11 @@
                 :check-strictly="true"
                 :data="departments"
                 :props="defaultProps"
+                :default-expanded-keys="defaultExpandeds"
+                 default-expand-all
                 show-checkbox
                 node-key="id"
                 class="permission-tree"
-                default-expand-all
                 @check="checkDeptTreeNode"
               />
             </el-form-item>
@@ -180,6 +164,10 @@
   </div>
 </template>
 <script>
+// import the component
+import Treeselect from "@riophae/vue-treeselect";
+// import the styles
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import permission from "@/directive/permission/index.js"; // 权限判断指令
 import {
   userList,
@@ -189,7 +177,7 @@ import {
 } from "@/api/permission/user";
 import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
-import { deepClone } from "@/utils";
+import { deepCloneAttributes } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 const defaultUser = {
@@ -207,7 +195,7 @@ const defaultUser = {
 
 export default {
   name: "User",
-  components: { Pagination },
+  components: { Pagination, Treeselect },
   directives: { permission },
   data() {
     return {
@@ -236,6 +224,7 @@ export default {
         children: "childrens",
         label: "name"
       },
+      defaultExpandeds: [],
       stateOptions: [{ label: "禁用", key: 0 }, { label: "启用", key: 1 }],
       departments: [],
       roles: [],
@@ -277,6 +266,13 @@ export default {
       });
       return roleNames.join(" , ");
     },
+    normalizer(node) {
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.childrens
+      };
+    },
     // 用户状态修改
     handleStateChange(row) {
       let text = row.state == 1 ? "启用" : "停用";
@@ -303,18 +299,28 @@ export default {
     },
     async getDepartments() {
       const res = await departments();
-      this.departments = [
-        { id: undefined, name: "部门树", childrens: res.result }
-      ];
+      let result = res.result;
+      this.diGuiTree(result);
+      this.departments = result;
     },
-    async getRoles() {
-      const res = await roles();
-      this.roles = res.result;
+    diGuiTree(item) {
+      //递归便利树结构
+      item.forEach(item => {
+        item.childrens === "" ||
+        item.childrens === undefined ||
+        item.childrens === null
+          ? delete item.childrens
+          : this.diGuiTree(item.childrens);
+      });
     },
     checkDeptTreeNode(a, b) {
       if (b.checkedKeys.length > 0) {
         this.$refs.tree.setCheckedKeys([a.id]);
       }
+    },
+    async getRoles() {
+      const res = await roles();
+      this.roles = res.result;
     },
     handleCreate() {
       this.dialogType = "new";
@@ -322,20 +328,20 @@ export default {
       this.dialogVisible = true;
       this.user = Object.assign({}, defaultUser);
       if (this.$refs.tree) {
-        this.$refs.tree.setCheckedKeys([]);
+        this.$refs.tree.setCheckedKeys([], true);
       }
     },
     handleEdit(scope) {
       this.dialogType = "edit";
       this.activeName = "first";
       this.dialogVisible = true;
-      this.user=deepClone(scope.row);
-      this.user.roleIds=[];
+      deepCloneAttributes(this.user, scope.row);
       this.$nextTick(() => {
-        this.$refs.tree.setCheckedKeys([this.user.deptid]);
-        if (this.user.roles) {
+        this.$refs.tree.setCheckedKeys([scope.row.deptid], true);
+        this.defaultExpandeds = [scope.row.deptid];
+        if (scope.row.roles) {
           let roleIds = [];
-          this.user.roles.forEach(role => {
+          scope.row.roles.forEach(role => {
             roleIds.push(role.id);
           });
           this.user.roleIds = roleIds;
@@ -364,17 +370,13 @@ export default {
       this.getList();
     },
     // 节点单击事件
-    handleSearchDeptNode(data) {
+    treeSearchChange(node) {
       this.isShowSelect = false;
-      this.listQuery.deptid = data.id;
+      this.listQuery.deptid = node.id;
       this.getList();
-    },
-
-    // 筛选节点
-    filterNode(value, data) {
-      if (!value) return true;
-      return data.name.indexOf(value) !== -1;
     }
   }
 };
 </script>
+<style lang="scss">
+</style>

@@ -63,6 +63,9 @@
         <el-form-item label="Value">
           <el-input v-model="dict.data_value" placeholder="Value" />
         </el-form-item>
+        <el-form-item label="排序">
+          <el-input v-model="dict.sorts" placeholder="排序" />
+        </el-form-item>
         <el-form-item label="描述">
           <el-input
             v-model="dict.description"
@@ -70,9 +73,6 @@
             type="textarea"
             placeholder="描述"
           />
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input v-model="dict.sorts" placeholder="排序" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -90,7 +90,7 @@ import {
   deleteDict
 } from "@/api/permission/dict";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
-import { deepCloneAttributes } from "@/utils";
+import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
 const defaultDict = {
   id: undefined,
@@ -146,7 +146,7 @@ export default {
     async handleEdit(scope) {
       this.dialogType = "edit";
       this.dialogVisible = true;
-      deepCloneAttributes(this.dict, scope.row);
+      this.dict = deepClone(scope.row);
     },
     async confirmDict() {
       const isEdit = this.dialogType === "edit";
