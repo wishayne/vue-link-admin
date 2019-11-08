@@ -15,6 +15,14 @@ export function getInfo() {
   })
 }
 
+export function getNewMenus(id) {
+  return request({
+    url: '/rest/user/newMenus',
+    method: 'get',
+    params: { id }
+  })
+}
+
 export function logout() {
   return request({
     url: '/rest/user/logout',

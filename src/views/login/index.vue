@@ -61,7 +61,7 @@
         <div class="tips">
          <!-- <span>推荐使用谷歌浏览器</span>-->
         </div>
-       
+
 
         <!-- <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           Or connect with
@@ -103,7 +103,7 @@ export default {
     };
     return {
       loginForm: {
-        username: "editor",
+        username: "admin",
         password: "123456"
       },
       loginRules: {

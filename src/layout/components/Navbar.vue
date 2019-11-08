@@ -18,6 +18,10 @@
         <el-tooltip content="字体大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
+
+        <el-tooltip content="Role Switch" effect="dark" placement="bottom">
+          <role-switch id="role-switch" class="right-menu-item hover-effect" />
+        </el-tooltip>
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
@@ -42,13 +46,14 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import Breadcrumb from "@/components/Breadcrumb";
-import Hamburger from "@/components/Hamburger";
-import Screenfull from "@/components/Screenfull";
-import SizeSelect from "@/components/SizeSelect";
-import Search from "@/components/HeaderSearch";
-import avatarGif from "@/assets/avatar.gif";
+import { mapGetters } from 'vuex';
+import Breadcrumb from '@/components/Breadcrumb';
+import Hamburger from '@/components/Hamburger';
+import Screenfull from '@/components/Screenfull';
+import RoleSwitch from '@/components/RoleSwitch';
+import SizeSelect from '@/components/SizeSelect';
+import Search from '@/components/HeaderSearch';
+import avatarGif from '@/assets/avatar.gif';
 
 export default {
   components: {
@@ -56,10 +61,11 @@ export default {
     Hamburger,
     Screenfull,
     SizeSelect,
+    RoleSwitch,
     Search
   },
   computed: {
-    ...mapGetters(["sidebar", "avatar", "device"])
+    ...mapGetters(['sidebar', 'avatar', 'device'])
   },
   data() {
     return {
@@ -68,10 +74,10 @@ export default {
   },
   methods: {
     toggleSideBar() {
-      this.$store.dispatch("app/toggleSideBar");
+      this.$store.dispatch('app/toggleSideBar');
     },
     async logout() {
-      await this.$store.dispatch("user/logout");
+      await this.$store.dispatch('user/logout');
       this.$router.push(`/login?redirect=${this.$route.fullPath}`);
     }
   }

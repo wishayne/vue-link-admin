@@ -1,11 +1,13 @@
-import { login, logout, getInfo } from '@/api/permission/user'
+import { login, logout, getInfo, getNewMenus } from '@/api/permission/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
+import router, { resetRouter } from '@/router'
+import store from '../index'
 
 const state = {
   token: getToken(),
   userinfo: {},
   roles: [],
+  curRole: {},
   menus: [],
   permissions: []
 }
@@ -19,6 +21,9 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_CUR_ROLE: (state, curRole) => {
+    state.curRole = curRole
   },
   SET_MENUS: (state, menus) => {
     state.menus = menus
@@ -54,7 +59,7 @@ const actions = {
         if (!userinfo || userinfo == null) {
           reject('getInfo: userinfo must be a non-null object!')
         }
-        const { roles, menus, permissions } = userinfo
+        const { roles, curRole, menus, permissions } = userinfo
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
@@ -62,13 +67,14 @@ const actions = {
         if (!menus || menus.length <= 0) {
           reject('getInfo: menus must be a non-null array!')
         }
-        const rolesName = []
-        for (var rname of roles) {
-          rolesName.push(rname.name)
+        const rolesInfo = []
+        for (var role of roles) {
+          rolesInfo.push({ name: role.name, id: role.id })
         }
 
         commit('SET_USER', userinfo)
-        commit('SET_ROLES', rolesName)
+        commit('SET_ROLES', rolesInfo)
+        commit('SET_CUR_ROLE', curRole)
         commit('SET_MENUS', menus)
         commit('SET_PERMISSIONS', permissions)
         // resolve(response.result)
@@ -79,6 +85,48 @@ const actions = {
     })
   },
 
+  // 根据角色id获取新的菜单树
+  getMenus({ commit, dispatch }, role) {
+    return new Promise((resolve, reject) => {
+      getNewMenus(role).then(response => {
+        if (!response) {
+          reject('Verification failed, please Login again.')
+        }
+        const userinfo = response.result
+        if (!userinfo || userinfo == null) {
+          reject('getNewMenus: userinfo must be a non-null object!')
+        }
+        const { menus } = userinfo
+
+        if (!menus || menus.length <= 0) {
+          reject('getNewMenus: menus must be a non-null array!')
+        }
+
+        commit('SET_MENUS', menus)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  // 切换角色，即重新获取角色的菜单列表
+  switchRole({ commit, dispatch }, role) {
+    return new Promise(async resolve => {
+      await store.dispatch('user/getMenus', role)
+
+      resetRouter()
+
+      // generate accessible routes map based on roles
+      const accessRoutes = await store.dispatch('permission/generateRoutes')
+
+      // dynamically add accessible routes
+      router.addRoutes(accessRoutes)
+      // reset visited views and cached views
+      store.dispatch('tagsView/delAllViews')
+      resolve()
+    })
+  },
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
