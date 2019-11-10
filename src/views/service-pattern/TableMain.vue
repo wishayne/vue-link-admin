@@ -38,16 +38,6 @@
       return {
           success:"chen1",
           imgurl : "",
-          gosp(){
-              this.$router.push({
-                  path: '/sp'
-              })
-          },
-          gorpsp(){
-              this.$router.push({
-                  path: '/rpsp'
-              })
-          },
         //用来接收后台传输的数据
         opensp : "消息提示",
         pageSize : 5,
@@ -191,17 +181,19 @@
                                                 spId:params.row.spId,
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
-                                                spField:params.row.spField
+                                                spField:params.row.spField,
+                                                spProcess:params.row.spProcess,
                                             }).catch(function (error) {
                                                 console.log(error);
                                             });
                                         } else {
-                                            console.log(params.row.olddata)
+                                            console.log(params.row.spProcess)
                                             this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updatesp",{
                                                 spId:params.row.spId,
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
                                                 spField:params.row.spField,
+                                                spProcess:params.row.spProcess,
                                                 spIdOld:params.row.olddata.spId,
                                                 spNameOld:params.row.olddata.spName,
                                                 spFuncOld:params.row.olddata.spFunc,
@@ -217,7 +209,8 @@
                                             spId:params.row.spId,
                                             spName:params.row.spName,
                                             spFunc:params.row.spFunc,
-                                            spField:params.row.spField
+                                            spField:params.row.spField,
+                                            spProcess:params.row.spProcess
                                         }
                                         // 在这里打开导入服务
                                         this.handleEdit(params.row);
@@ -238,10 +231,12 @@
                                 click: () => {
                                     if (params.row.$processEdit) {
                                         this.opensp = "保存中，请稍后..."
+                                        console.log(params.row.url)
                                         this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/savesp?inputfile=' + params.row.spId + '&url=' + params.row.url)
                                             .then(res => {
+                                                params.row.spProcess = params.row.url
                                                 if (res.data.msg == 'success') {
-                                                    this.opensp = "保存成功！"
+                                                    this.opensp = "保存成功！";
                                                 } else {
                                                     this.opensp = res.data.msg
                                                 }
@@ -252,17 +247,24 @@
                                     }
                                     else {
                                         this.opensp = "服务模式文件导入中，请稍后...";
-                                        this.$ajax('http://spalgorithm.free.idcfengye.com/api/opensp?inputfile=' + params.row.spId)
-                                            .then(res => {
-                                                params.row.url = res.data.url
-                                                if (res.data.msg == 'success') {
-                                                    this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url + " 修改文件。" +
-                                                        "用户名：kermit，密码：kermit"
-                                                    window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url)
-                                                } else {
-                                                    this.opensp = res.data.msg
-                                                }
-                                            });
+                                        if (params.row.spProcess === null || params.row.spProcess === ""){
+                                            this.$ajax('http://spalgorithm.free.idcfengye.com/api/opensp?inputfile=' + params.row.spId + "&processname=" + params.row.spName)
+                                                .then(res => {
+                                                    params.row.url = res.data.url
+                                                    if (res.data.msg == 'success') {
+                                                        this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url + " 修改文件。" +
+                                                            "用户名：kermit，密码：kermit"
+                                                        window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url)
+                                                    } else {
+                                                        this.opensp = res.data.msg
+                                                    }
+                                                });
+                                        } else {
+                                            params.row.url = params.row.spProcess;
+                                            this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess + " 修改文件。" +
+                                                "用户名：kermit，密码：kermit";
+                                            window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess)
+                                        }
                                         this.handleprocessEdit(params.row);
                                     }
                                 }
@@ -295,7 +297,7 @@
                             on: {
                                 'on-ok': () => {
                                     console.log(params.row)
-                                    this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/delsp?inputfile=' + params.row.spId)
+                                    this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/delsp?inputfile=' + params.row.spId + '&url=' + params.row.url)
                                         .then(res => {
                                             this.opensp = "删除成功！"
                                         });
@@ -325,31 +327,6 @@
             }],
         //iview的列命名规范
         spColumn: [
-              /*{
-                  title: '服务模式ID',
-                  key: 'spId',
-                  render: (h, params) => {
-                      //@h 是一个构造器，可以使用其创建新组建
-                      //@params 是表格的数据，params.row可以获取当前行的数据
-                      if (params.row.$isEdit) {
-                          return h("Select", {
-                              props: {transfer:true},
-                              on: {
-                                  "on-change": (event) => {
-                                      params.row.spId = event
-                                  }
-                              }
-                          }, this.spIdList.map((item) => {
-                              return h('Option', {
-                                  props: {
-                                      value: item.value,
-                                      label: item.value
-                                  }
-                              })
-                          }))
-                      } else return h('div', params.row.spId);
-                  }
-              }, */
               {
                   title: '服务模式名称',
                   key: 'spName',
@@ -457,7 +434,9 @@
                                                           "spId" : _spData[i].spId,
                                                           "spName" : _spData[i].spName,
                                                           "spFunc" : _spData[i].spFunc,
-                                                          "spField" : _spData[i].spField
+                                                          "spField" : _spData[i].spField,
+                                                          "spProcess" : _spData[i].spProcess,
+                                                          "url" : _spData[i].spProcess
                                                       })
                                                   });
                                                   if (that.spAllData.length <= that.pageSize){
@@ -598,7 +577,8 @@
               spFunc:"",
               spField:"",
               context:"",
-              new:true
+              new:true,
+              spProcess:"",
           })
 
       },
