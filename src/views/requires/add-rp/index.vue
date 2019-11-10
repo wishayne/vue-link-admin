@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import TreeTable from '../../../components/TreeTable/index'
+import TreeTable from '@/components/TreeTable/index'
 export default {
   name: 'AddRP',
   components: {
