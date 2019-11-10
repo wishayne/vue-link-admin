@@ -78,6 +78,11 @@
                         },
                         attrs: {
                             src: params.row.imgurl
+                        },
+                        on: {
+                            click:()=>{
+                                this.showimg(params.row._index)
+                            }
                         }
                     })
                 }
@@ -182,7 +187,7 @@
                                     if (params.row.$isEdit) {
                                         console.log(params.row.spName);
                                         if (params.row.new) {
-                                            this.$ajax.post("http://localhost:8088/addsp",{
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/addsp",{
                                                 spId:params.row.spId,
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
@@ -192,7 +197,7 @@
                                             });
                                         } else {
                                             console.log(params.row.olddata)
-                                            this.$ajax.post("http://localhost:8088/updatesp",{
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updatesp",{
                                                 spId:params.row.spId,
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
@@ -233,7 +238,7 @@
                                 click: () => {
                                     if (params.row.$processEdit) {
                                         this.opensp = "保存中，请稍后..."
-                                        this.$ajax.get('http://127.0.0.1:8000/api/savesp?inputfile=' + params.row.spId + '&url=' + params.row.url)
+                                        this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/savesp?inputfile=' + params.row.spId + '&url=' + params.row.url)
                                             .then(res => {
                                                 if (res.data.msg == 'success') {
                                                     this.opensp = "保存成功！"
@@ -247,7 +252,7 @@
                                     }
                                     else {
                                         this.opensp = "服务模式文件导入中，请稍后...";
-                                        this.$ajax('http://127.0.0.1:8000/api/opensp?inputfile=' + params.row.spId)
+                                        this.$ajax('http://spalgorithm.free.idcfengye.com/api/opensp?inputfile=' + params.row.spId)
                                             .then(res => {
                                                 params.row.url = res.data.url
                                                 if (res.data.msg == 'success') {
@@ -274,7 +279,7 @@
                             on: {
                                 click: () => {
                                     this.opensp = "执行中"
-                                    let url = 'http://127.0.0.1:8000/api/runsp?inputfile=' + params.row.spId
+                                    let url = 'http://spalgorithm.free.idcfengye.com/api/runsp?inputfile=' + params.row.spId
                                     this.$ajax.get(url).then(data =>{
                                         this.opensp = data.data.msg
                                     })
@@ -290,11 +295,11 @@
                             on: {
                                 'on-ok': () => {
                                     console.log(params.row)
-                                    this.$ajax.get('http://127.0.0.1:8000/api/delsp?inputfile=' + params.row.spId)
+                                    this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/delsp?inputfile=' + params.row.spId)
                                         .then(res => {
                                             this.opensp = "删除成功！"
                                         });
-                                    this.$ajax.post("http://localhost:8088/delsp",{
+                                    this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delsp",{
                                         spId:params.row.spId,
                                         spName:params.row.spName,
                                         spFunc:params.row.spFunc,
@@ -428,7 +433,7 @@
                               on: {
                                   click: () => {
                                           console.log(params.row);
-                                          this.$ajax.post("http://localhost:8088/findspbyall",{
+                                          this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
                                               spId:params.row.spId,
                                               spName:params.row.spName,
                                               spFunc:params.row.spFunc,
@@ -437,7 +442,7 @@
                                               var _spData = res.data;
                                               var that = this;
                                               var promiseAll = _spData.map(function(i){
-                                                  return that.$ajax.get('http://127.0.0.1:8000/api/getimg?inputfile=' + i.spId, {responseType: 'arraybuffer'})
+                                                  return that.$ajax.get('http://spalgorithm.free.idcfengye.com/api/getimg?inputfile=' + i.spId, {responseType: 'arraybuffer'})
                                               });
 
                                               /*this.$ajax.get(url, {responseType: 'arraybuffer'}).then(data =>{
@@ -479,7 +484,7 @@
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
-      this.$ajax('http://localhost:8088/findAll').then(res => {
+      this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findAll').then(res => {
         this.tableData = res.data
         //为了能修改数据需要在此处给每行数据加一个是否修改状态
         console.log(this.tableData)
@@ -490,7 +495,7 @@
         console.log(error);
       });
 
-      this.$ajax('http://localhost:8088/findspid').then(res => {
+      this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspid').then(res => {
           let that = this
           that.spIdList = [{value:" "}]
           res.data.forEach(data=>{
@@ -503,7 +508,7 @@
           console.log(error);
       });
 
-        this.$ajax('http://localhost:8088/findspname').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspname').then(res => {
             let that = this
             that.spNameList = [{value:" "}]
             res.data.forEach(data=>{
@@ -516,7 +521,7 @@
             console.log(error);
         });
 
-        this.$ajax('http://localhost:8088/findspfunc').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspfunc').then(res => {
             let that = this
             that.spFuncList = [{value:" "}]
             res.data.forEach(data=>{
@@ -529,7 +534,7 @@
             console.log(error);
         });
 
-        this.$ajax('http://localhost:8088/findspfield').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspfield').then(res => {
             let that = this
             that.spFieldList = [{value:" "}]
             res.data.forEach(data=>{
@@ -602,6 +607,15 @@
            let _start = (index - 1) * this.pageSize;
            let _end = index * this.pageSize;
            this.spData = this.spAllData.slice(_start, _end)
+        },
+        showimg (index) {
+            let img = new Image();
+            img.src = this.spData[index].imgurl;
+            this.$Modal.info({
+                title: '缩略图',
+                width: img.width + 100,
+                content: `<img src="${this.spData[index].imgurl}">`
+            })
         }
     },
 
