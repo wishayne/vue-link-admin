@@ -4,7 +4,7 @@
       <svg-icon icon-class="peoples" />
     </div>
     <el-dropdown-menu slot="dropdown">
-      <el-dropdown-item v-for="item of rolesOptions" :key="item.id" :disabled="curRole.id===item.id" :command="item.id">
+      <el-dropdown-item v-for="item of rolesOptions" :key="item.id" :disabled="curRole===item.id" :command="item.id">
         {{
           item.name }}
       </el-dropdown-item>

@@ -7,7 +7,7 @@ const state = {
   token: getToken(),
   userinfo: {},
   roles: [],
-  curRole: {},
+  curRole: -1,
   menus: [],
   permissions: []
 }
@@ -59,7 +59,7 @@ const actions = {
         if (!userinfo || userinfo == null) {
           reject('getInfo: userinfo must be a non-null object!')
         }
-        const { roles, curRole, menus, permissions } = userinfo
+        const { roles, curRoleId, menus, permissions } = userinfo
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
@@ -74,7 +74,7 @@ const actions = {
 
         commit('SET_USER', userinfo)
         commit('SET_ROLES', rolesInfo)
-        commit('SET_CUR_ROLE', curRole)
+        commit('SET_CUR_ROLE', curRoleId)
         commit('SET_MENUS', menus)
         commit('SET_PERMISSIONS', permissions)
         // resolve(response.result)
@@ -96,13 +96,14 @@ const actions = {
         if (!userinfo || userinfo == null) {
           reject('getNewMenus: userinfo must be a non-null object!')
         }
-        const { menus } = userinfo
+        const { menus, curRoleId } = userinfo
 
         if (!menus || menus.length <= 0) {
           reject('getNewMenus: menus must be a non-null array!')
         }
 
         commit('SET_MENUS', menus)
+        commit('SET_CUR_ROLE', curRoleId)
         resolve()
       }).catch(error => {
         reject(error)
