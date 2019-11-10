@@ -102,16 +102,6 @@
         modal2 : false,
         modal3: false,
         rpAllIdNameList: [],
-        gosp(){
-              this.$router.push({
-                  path: '/sp'
-              })
-        },
-        gorpsp(){
-              this.$router.push({
-                  path: '/rpsp'
-              })
-        },
         update(){
             this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/updatep')
         },
