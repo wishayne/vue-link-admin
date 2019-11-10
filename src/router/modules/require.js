@@ -12,8 +12,8 @@ const requireRouter = {
   },
   children: [
     {
-      path: '/require/add-require',
-      component: () => import('@/views/add-require'),
+      path: '/requires/all-requires/index',
+      component: () => import('@/views/requires/all-requires/index'),
       name: 'add-require',
       meta: {
         title: '需求维护', noCache: true

@@ -82,8 +82,8 @@
 </template>
 
 <script>
-import baseUrl from '../../utils/api'
-import { requireState } from '../../utils/restrict-options'
+import baseUrl from '../../../utils/api'
+import { requireState } from '../../../utils/restrict-options'
 import qs from 'qs'
 export default {
   name: 'AllRequires',
