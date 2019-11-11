@@ -9,6 +9,8 @@ import monitorRouter from './modules/monitor'
 import permissionRouter from './modules/permission'
 import requireRouter from './modules/require'
 import spRouter from './modules/service-pattern'
+import serviceManageRouter from './modules/service-mange'
+import serviceSolutionRouter from './modules/service-solution'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -104,6 +106,8 @@ export const asyncRoutes = [
   monitorRouter,
   requireRouter,
   spRouter,
+  serviceManageRouter,
+  serviceSolutionRouter,
   {
     path: 'https://github.com/252956/vue-link-admin',
     meta: { title: '外链', icon: 'link' }
