@@ -102,18 +102,8 @@
         modal2 : false,
         modal3: false,
         rpAllIdNameList: [],
-        gosp(){
-              this.$router.push({
-                  path: '/sp'
-              })
-        },
-        gorpsp(){
-              this.$router.push({
-                  path: '/rpsp'
-              })
-        },
         update(){
-            this.$ajax.get('http://127.0.0.1:8000/api/updatep')
+            this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/updatep')
         },
           patternData:[],
           pattern:[
@@ -246,7 +236,7 @@
                           },
                           on: {
                               'on-ok': () => {
-                                  /*this.$ajax.post("http://localhost:8088/delMap",{
+                                  /*this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delMap",{
                                       rpId:params.row.rpId,
                                       spId:params.row.spId,
                                       p:params.row.p,
@@ -344,7 +334,7 @@
                           },
                           on: {
                               'on-ok': () => {
-                                  /*this.$ajax.post("http://localhost:8088/delMap",{
+                                  /*this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delMap",{
                                       rpId:params.row.rpId,
                                       spId:params.row.spId,
                                       p:params.row.p,
@@ -443,7 +433,14 @@
                 }))
               } else return h('div', params.row.context);*/
             }
-          }, {
+          },
+            {
+                title: ' ',
+                key: 'p',
+                render: (h, params) => {
+                    return h("div", params.row.p);
+                }
+            }, {
             title: ' ',
             key: 'times',
             render: (h, params) => {
@@ -463,13 +460,6 @@
               }
             }
           },
-            {
-                title: ' ',
-                key: 'p',
-                render: (h, params) => {
-                    return h("div", params.row.p);
-                }
-            },
           {
             title: ' ',
             key: 'action',
@@ -491,7 +481,7 @@
                       if (params.row.$isEdit) {
                         console.log(params.row)
                         if (params.row.new) {
-                            this.$ajax.post("http://localhost:8088/insertrecord",{
+                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/insertrecord",{
                                 rpId:params.row.rpId,
                                 spId:params.row.spId,
                                 times:params.row.times,
@@ -502,7 +492,7 @@
                         } else {
                             console.log(params.row._index)
                             console.log(this.index)
-                            this.$ajax.post("http://localhost:8088/updaterecord",{
+                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updaterecord",{
                                 rpId:params.row.rpId,
                                 spId:params.row.spId,
                                 times:params.row.times,
@@ -543,7 +533,7 @@
                   on: {
                     'on-ok': () => {
                         console.log(params.row)
-                        this.$ajax.post("http://localhost:8088/delrecord",{
+                        this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delrecord",{
                             rpId:params.row.rpId,
                             spId:params.row.spId,
                             context:params.row.context
@@ -637,6 +627,14 @@
                       }, contextlist)]
                   }
               }, {
+                title: '匹配度',
+                key: 'p',
+                render: (h, params) => {
+                    if (params.row.$isEdit) {
+                        params.row.p = 1;
+                    }
+                }
+            }, {
                 title: '使用次数',
                 key: 'times',
                 render: (h, params) => {
@@ -644,14 +642,6 @@
                         params.row.times = 1;
                     }
                 }
-              }, {
-                  title: '匹配度',
-                  key: 'p',
-                  render: (h, params) => {
-                      if (params.row.$isEdit) {
-                          params.row.p = 1;
-                      }
-                  }
               },
               {
                   title: '操作',
@@ -687,7 +677,7 @@
                                               }
                                           }
                                           console.log(rpIdNameList)
-                                          this.$ajax.post("http://localhost:8088/findspbyall",{
+                                          this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
                                               spId:'',
                                               spName:params.row.spName,
                                               spFunc:'',
@@ -709,7 +699,7 @@
                                               var that = this;
                                               var promiseAll = datamap.map(function(i){
                                                   var x = i.map(function(j){
-                                                      return that.$ajax.post("http://localhost:8088/findtimesandp",{
+                                                      return that.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findtimesandp",{
                                                           rpId:j.rpId,
                                                           spId:j.spId,
                                                           context:that.searchcontext
@@ -786,7 +776,7 @@
           console.log(error);
       });
 
-        this.$ajax('http://localhost:8088/findsp').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findsp').then(res => {
             let that = this
             that.spList = [{value:" "}]
             res.data.forEach(data=>{
@@ -799,7 +789,7 @@
             console.log(error);
         });
 
-        this.$ajax('http://localhost:8088/findcontext').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findcontext').then(res => {
             let that = this
             that.context = [{value:" "}]
             res.data.forEach(data=>{
@@ -891,7 +881,7 @@
           if (this.model1 == undefined){
               this.model1 = ""
           }
-          this.$ajax.post("http://localhost:8088/findspbyall",{
+          this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
                 spId:'',
                 spName:this.model1,
                 spFunc:'',

@@ -38,16 +38,6 @@
       return {
           success:"chen1",
           imgurl : "",
-          gosp(){
-              this.$router.push({
-                  path: '/sp'
-              })
-          },
-          gorpsp(){
-              this.$router.push({
-                  path: '/rpsp'
-              })
-          },
         //用来接收后台传输的数据
         opensp : "消息提示",
         pageSize : 5,
@@ -78,6 +68,11 @@
                         },
                         attrs: {
                             src: params.row.imgurl
+                        },
+                        on: {
+                            click:()=>{
+                                this.showimg(params.row._index)
+                            }
                         }
                     })
                 }
@@ -182,21 +177,23 @@
                                     if (params.row.$isEdit) {
                                         console.log(params.row.spName);
                                         if (params.row.new) {
-                                            this.$ajax.post("http://localhost:8088/addsp",{
-                                                spId:params.row.spId,
-                                                spName:params.row.spName,
-                                                spFunc:params.row.spFunc,
-                                                spField:params.row.spField
-                                            }).catch(function (error) {
-                                                console.log(error);
-                                            });
-                                        } else {
-                                            console.log(params.row.olddata)
-                                            this.$ajax.post("http://localhost:8088/updatesp",{
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/addsp",{
                                                 spId:params.row.spId,
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
                                                 spField:params.row.spField,
+                                                spProcess:params.row.spProcess,
+                                            }).catch(function (error) {
+                                                console.log(error);
+                                            });
+                                        } else {
+                                            console.log(params.row.spProcess)
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updatesp",{
+                                                spId:params.row.spId,
+                                                spName:params.row.spName,
+                                                spFunc:params.row.spFunc,
+                                                spField:params.row.spField,
+                                                spProcess:params.row.spProcess,
                                                 spIdOld:params.row.olddata.spId,
                                                 spNameOld:params.row.olddata.spName,
                                                 spFuncOld:params.row.olddata.spFunc,
@@ -212,7 +209,8 @@
                                             spId:params.row.spId,
                                             spName:params.row.spName,
                                             spFunc:params.row.spFunc,
-                                            spField:params.row.spField
+                                            spField:params.row.spField,
+                                            spProcess:params.row.spProcess
                                         }
                                         // 在这里打开导入服务
                                         this.handleEdit(params.row);
@@ -233,10 +231,12 @@
                                 click: () => {
                                     if (params.row.$processEdit) {
                                         this.opensp = "保存中，请稍后..."
-                                        this.$ajax.get('http://127.0.0.1:8000/api/savesp?inputfile=' + params.row.spId + '&url=' + params.row.url)
+                                        console.log(params.row.url)
+                                        this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/savesp?inputfile=' + params.row.spId + '&url=' + params.row.url)
                                             .then(res => {
+                                                params.row.spProcess = params.row.url
                                                 if (res.data.msg == 'success') {
-                                                    this.opensp = "保存成功！"
+                                                    this.opensp = "保存成功！";
                                                 } else {
                                                     this.opensp = res.data.msg
                                                 }
@@ -247,17 +247,24 @@
                                     }
                                     else {
                                         this.opensp = "服务模式文件导入中，请稍后...";
-                                        this.$ajax('http://127.0.0.1:8000/api/opensp?inputfile=' + params.row.spId)
-                                            .then(res => {
-                                                params.row.url = res.data.url
-                                                if (res.data.msg == 'success') {
-                                                    this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url + " 修改文件。" +
-                                                        "用户名：kermit，密码：kermit"
-                                                    window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url)
-                                                } else {
-                                                    this.opensp = res.data.msg
-                                                }
-                                            });
+                                        if (params.row.spProcess === null || params.row.spProcess === ""){
+                                            this.$ajax('http://spalgorithm.free.idcfengye.com/api/opensp?inputfile=' + params.row.spId + "&processname=" + params.row.spName)
+                                                .then(res => {
+                                                    params.row.url = res.data.url
+                                                    if (res.data.msg == 'success') {
+                                                        this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url + " 修改文件。" +
+                                                            "用户名：kermit，密码：kermit"
+                                                        window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + res.data.url)
+                                                    } else {
+                                                        this.opensp = res.data.msg
+                                                    }
+                                                });
+                                        } else {
+                                            params.row.url = params.row.spProcess;
+                                            this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess + " 修改文件。" +
+                                                "用户名：kermit，密码：kermit";
+                                            window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess)
+                                        }
                                         this.handleprocessEdit(params.row);
                                     }
                                 }
@@ -274,7 +281,7 @@
                             on: {
                                 click: () => {
                                     this.opensp = "执行中"
-                                    let url = 'http://127.0.0.1:8000/api/runsp?inputfile=' + params.row.spId
+                                    let url = 'http://spalgorithm.free.idcfengye.com/api/runsp?inputfile=' + params.row.spId
                                     this.$ajax.get(url).then(data =>{
                                         this.opensp = data.data.msg
                                     })
@@ -290,11 +297,11 @@
                             on: {
                                 'on-ok': () => {
                                     console.log(params.row)
-                                    this.$ajax.get('http://127.0.0.1:8000/api/delsp?inputfile=' + params.row.spId)
+                                    this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/delsp?inputfile=' + params.row.spId + '&url=' + params.row.url)
                                         .then(res => {
                                             this.opensp = "删除成功！"
                                         });
-                                    this.$ajax.post("http://localhost:8088/delsp",{
+                                    this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delsp",{
                                         spId:params.row.spId,
                                         spName:params.row.spName,
                                         spFunc:params.row.spFunc,
@@ -320,31 +327,6 @@
             }],
         //iview的列命名规范
         spColumn: [
-              /*{
-                  title: '服务模式ID',
-                  key: 'spId',
-                  render: (h, params) => {
-                      //@h 是一个构造器，可以使用其创建新组建
-                      //@params 是表格的数据，params.row可以获取当前行的数据
-                      if (params.row.$isEdit) {
-                          return h("Select", {
-                              props: {transfer:true},
-                              on: {
-                                  "on-change": (event) => {
-                                      params.row.spId = event
-                                  }
-                              }
-                          }, this.spIdList.map((item) => {
-                              return h('Option', {
-                                  props: {
-                                      value: item.value,
-                                      label: item.value
-                                  }
-                              })
-                          }))
-                      } else return h('div', params.row.spId);
-                  }
-              }, */
               {
                   title: '服务模式名称',
                   key: 'spName',
@@ -428,7 +410,7 @@
                               on: {
                                   click: () => {
                                           console.log(params.row);
-                                          this.$ajax.post("http://localhost:8088/findspbyall",{
+                                          this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
                                               spId:params.row.spId,
                                               spName:params.row.spName,
                                               spFunc:params.row.spFunc,
@@ -437,7 +419,7 @@
                                               var _spData = res.data;
                                               var that = this;
                                               var promiseAll = _spData.map(function(i){
-                                                  return that.$ajax.get('http://127.0.0.1:8000/api/getimg?inputfile=' + i.spId, {responseType: 'arraybuffer'})
+                                                  return that.$ajax.get('http://spalgorithm.free.idcfengye.com/api/getimg?inputfile=' + i.spId, {responseType: 'arraybuffer'})
                                               });
 
                                               /*this.$ajax.get(url, {responseType: 'arraybuffer'}).then(data =>{
@@ -452,7 +434,9 @@
                                                           "spId" : _spData[i].spId,
                                                           "spName" : _spData[i].spName,
                                                           "spFunc" : _spData[i].spFunc,
-                                                          "spField" : _spData[i].spField
+                                                          "spField" : _spData[i].spField,
+                                                          "spProcess" : _spData[i].spProcess,
+                                                          "url" : _spData[i].spProcess
                                                       })
                                                   });
                                                   if (that.spAllData.length <= that.pageSize){
@@ -479,7 +463,7 @@
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
-      this.$ajax('http://localhost:8088/findAll').then(res => {
+      this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findAll').then(res => {
         this.tableData = res.data
         //为了能修改数据需要在此处给每行数据加一个是否修改状态
         console.log(this.tableData)
@@ -490,7 +474,7 @@
         console.log(error);
       });
 
-      this.$ajax('http://localhost:8088/findspid').then(res => {
+      this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspid').then(res => {
           let that = this
           that.spIdList = [{value:" "}]
           res.data.forEach(data=>{
@@ -503,7 +487,7 @@
           console.log(error);
       });
 
-        this.$ajax('http://localhost:8088/findspname').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspname').then(res => {
             let that = this
             that.spNameList = [{value:" "}]
             res.data.forEach(data=>{
@@ -516,7 +500,7 @@
             console.log(error);
         });
 
-        this.$ajax('http://localhost:8088/findspfunc').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspfunc').then(res => {
             let that = this
             that.spFuncList = [{value:" "}]
             res.data.forEach(data=>{
@@ -529,7 +513,7 @@
             console.log(error);
         });
 
-        this.$ajax('http://localhost:8088/findspfield').then(res => {
+        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspfield').then(res => {
             let that = this
             that.spFieldList = [{value:" "}]
             res.data.forEach(data=>{
@@ -593,7 +577,8 @@
               spFunc:"",
               spField:"",
               context:"",
-              new:true
+              new:true,
+              spProcess:"",
           })
 
       },
@@ -602,6 +587,15 @@
            let _start = (index - 1) * this.pageSize;
            let _end = index * this.pageSize;
            this.spData = this.spAllData.slice(_start, _end)
+        },
+        showimg (index) {
+            let img = new Image();
+            img.src = this.spData[index].imgurl;
+            this.$Modal.info({
+                title: '缩略图',
+                width: img.width + 100,
+                content: `<img src="${this.spData[index].imgurl}">`
+            })
         }
     },
 
