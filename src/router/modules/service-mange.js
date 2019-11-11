@@ -1,6 +1,10 @@
 /** When your routing table is too long, you can split it into small modules**/
 
 import Layout from '@/layout'
+import Vue from 'vue'
+import Axios from 'axios'
+Axios.defaults.baseURL = `http://192.168.42.159:30534/`
+Vue.prototype.$http = Axios
 
 const serviceManageRouter = {
   path: '/service-mange',

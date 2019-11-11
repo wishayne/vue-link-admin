@@ -31,7 +31,6 @@
   </div>
 </template>
 <script>
-import '../../plugins/element.js'
 export default {
   components: {
 

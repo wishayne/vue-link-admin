@@ -25,7 +25,7 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatarGif" class="user-avatar" />
+          <img :src="avatarGif" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -45,13 +45,13 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import Breadcrumb from '@/components/Breadcrumb';
-import Hamburger from '@/components/Hamburger';
-import Screenfull from '@/components/Screenfull';
-import RoleSwitch from '@/components/RoleSwitch';
-import SizeSelect from '@/components/SizeSelect';
-import avatarGif from '@/assets/avatar.gif';
+import { mapGetters } from 'vuex'
+import Breadcrumb from '@/components/Breadcrumb'
+import Hamburger from '@/components/Hamburger'
+import Screenfull from '@/components/Screenfull'
+import RoleSwitch from '@/components/RoleSwitch'
+import SizeSelect from '@/components/SizeSelect'
+import avatarGif from '@/assets/avatar.gif'
 
 export default {
   components: {
@@ -67,18 +67,18 @@ export default {
   data() {
     return {
       avatarGif: avatarGif
-    };
+    }
   },
   methods: {
     toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar');
+      this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/logout');
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`);
+      await this.$store.dispatch('user/logout')
+      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
