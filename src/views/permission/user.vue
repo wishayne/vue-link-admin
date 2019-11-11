@@ -3,14 +3,6 @@
     <div style="margin-top:20px;margin-bottom: 20px">
       <el-row :gutter="10">
         <el-col :span="4">
-          <el-input
-            prefix-icon="el-icon-search"
-            v-model="searchDeptName"
-            placeholder="请输入部门名称"
-            clearable
-          />
-        </el-col>
-        <el-col :span="4">
           <el-input v-model="listQuery.name" placeholder="账号" />
         </el-col>
         <el-col :span="4">
@@ -46,74 +38,53 @@
       </el-row>
     </div>
 
-    <div>
-      <el-row>
-        <el-col :span="4">
-          <el-tree
-            ref="serchDeptTree"
-            :data="departments"
-            :props="defaultProps"
-            node-key="id"
-            default-expand-all
-            :expand-on-click-node="false"
-            :filter-node-method="filterNode"
-            class="objectTree"
-            @node-click="handleSearchDeptNode"
-          />
-        </el-col>
+    <el-table
+      :key="tableKey"
+      :data="list"
+      v-loading="listLoading"
+      style="width: 100%;"
+      height="450"
+      border
+    >
+      <el-table-column width="50">
+        <template slot-scope="scope">
+          <span>{{scope.$index+(listQuery.page - 1) * listQuery.limit + 1}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="账号" width="120"></el-table-column>
+      <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
+      <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
+      <!-- <el-table-column prop="email" label="邮箱" width="180"></el-table-column> -->
+      <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
 
-        <el-col :span="20">
-          <el-table
-            :key="tableKey"
-            :data="list"
-            v-loading="listLoading"
-            style="width: 100%;"
-            height="450"
-            border
-          >
-            <el-table-column width="50">
-              <template slot-scope="scope">
-                <span>{{scope.$index+(listQuery.page - 1) * listQuery.limit + 1}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="name" label="账号" width="120"></el-table-column>
-            <el-table-column prop="vserName" label="真实姓名" width="90"></el-table-column>
-            <el-table-column prop="deptName" label="部门" width="120"></el-table-column>
-            <el-table-column prop="mobile" label="手机" width="180"></el-table-column>
-            <!-- <el-table-column prop="email" label="邮箱" width="180"></el-table-column> -->
-            <el-table-column prop="roleName" label="角色" width="150" :formatter="formatRole"></el-table-column>
-
-            <el-table-column label="禁用/启用" width="85">
-              <template slot-scope="scope">
-                <el-switch
-                  v-model="scope.row.state"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="handleStateChange(scope.row)"
-                ></el-switch>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作">
-              <template slot-scope="scope">
-                <el-button
-                  @click="handleEdit(scope)"
-                  type="text"
-                  size="small"
-                  v-permission="['/rest/user/update']"
-                >编辑</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <pagination
-            v-show="total>0"
-            :total="total"
-            :page.sync="listQuery.page"
-            :limit.sync="listQuery.limit"
-            @pagination="getList"
-          />
-        </el-col>
-      </el-row>
-    </div>
+      <el-table-column label="禁用/启用" width="85">
+        <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.state"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleStateChange(scope.row)"
+          ></el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button
+            @click="handleEdit(scope)"
+            type="text"
+            size="small"
+            v-permission="['/rest/user/update']"
+          >编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑':'新增'">
       <el-form :model="user" label-width="80px" label-position="left" style="height: 410px;">
         <el-tabs v-model="activeName">
@@ -122,7 +93,7 @@
               <el-input v-model="user.name" placeholder="账号" />
             </el-form-item>
             <el-form-item label="密码">
-              <el-input v-model="user.password" placeholder="密码" />
+              <el-input type="password" v-model="user.password" placeholder="密码" />
             </el-form-item>
             <el-form-item label="真实姓名">
               <el-input v-model="user.vserName" placeholder="真实姓名" />
@@ -144,22 +115,7 @@
               </el-select>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="部门" name="second">
-            <el-form-item>
-              <el-tree
-                ref="tree"
-                :check-strictly="true"
-                :data="departments"
-                :props="defaultProps"
-                show-checkbox
-                node-key="id"
-                class="permission-tree"
-                default-expand-all
-                @check="checkDeptTreeNode"
-              />
-            </el-form-item>
-          </el-tab-pane>
-          <el-tab-pane label="角色" name="third">
+          <el-tab-pane label="角色" name="second">
             <el-checkbox-group v-model="user.roleIds">
               <el-checkbox
                 v-for="item in roles"
@@ -187,7 +143,6 @@ import {
   updateUser,
   updateState
 } from "@/api/permission/user";
-import { departments } from "@/api/permission/department";
 import { roles } from "@/api/permission/role";
 import { deepClone } from "@/utils";
 import { isEmpty, isString, isArray } from "@/utils/validate";
@@ -200,8 +155,6 @@ const defaultUser = {
   mobile: "",
   state: undefined,
   email: "",
-  deptid: undefined,
-  deptName: "",
   roleIds: []
 };
 
@@ -226,18 +179,14 @@ export default {
         vserName: "",
         name: "",
         mobile: "",
-        deptid: undefined,
-        deptName: "",
         state: undefined
       },
-      searchDeptName: "",
       user: Object.assign({}, defaultUser),
       defaultProps: {
         children: "childrens",
         label: "name"
       },
       stateOptions: [{ label: "禁用", key: 0 }, { label: "启用", key: 1 }],
-      departments: [],
       roles: [],
       activeName: "first",
       dialogVisible: false,
@@ -246,13 +195,7 @@ export default {
   },
   created() {
     this.getList();
-    this.getDepartments();
     this.getRoles();
-  },
-  watch: {
-    searchDeptName(val) {
-      this.$refs.serchDeptTree.filter(val);
-    }
   },
   methods: {
     async getList() {
@@ -301,29 +244,15 @@ export default {
           row.state = row.state == 0 ? 1 : 0;
         });
     },
-    async getDepartments() {
-      const res = await departments();
-      this.departments = [
-        { id: undefined, name: "部门树", childrens: res.result }
-      ];
-    },
     async getRoles() {
       const res = await roles();
       this.roles = res.result;
-    },
-    checkDeptTreeNode(a, b) {
-      if (b.checkedKeys.length > 0) {
-        this.$refs.tree.setCheckedKeys([a.id]);
-      }
     },
     handleCreate() {
       this.dialogType = "new";
       this.activeName = "first";
       this.dialogVisible = true;
       this.user = Object.assign({}, defaultUser);
-      if (this.$refs.tree) {
-        this.$refs.tree.setCheckedKeys([]);
-      }
     },
     handleEdit(scope) {
       this.dialogType = "edit";
@@ -332,7 +261,6 @@ export default {
       this.user=deepClone(scope.row);
       this.user.roleIds=[];
       this.$nextTick(() => {
-        this.$refs.tree.setCheckedKeys([this.user.deptid]);
         if (this.user.roles) {
           let roleIds = [];
           this.user.roles.forEach(role => {
@@ -344,12 +272,6 @@ export default {
     },
     async confirmUser() {
       const isEdit = this.dialogType === "edit";
-      var checkedKeys = this.$refs.tree.getCheckedKeys();
-      if (checkedKeys) {
-        this.user.deptid = Number(checkedKeys.join(","));
-      } else {
-        this.user.deptid = -1;
-      }
       if (isEdit) {
         await updateUser(this.user);
       } else {
@@ -363,18 +285,6 @@ export default {
       });
       this.getList();
     },
-    // 节点单击事件
-    handleSearchDeptNode(data) {
-      this.isShowSelect = false;
-      this.listQuery.deptid = data.id;
-      this.getList();
-    },
-
-    // 筛选节点
-    filterNode(value, data) {
-      if (!value) return true;
-      return data.name.indexOf(value) !== -1;
-    }
   }
 };
 </script>

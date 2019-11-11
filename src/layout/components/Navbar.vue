@@ -11,7 +11,6 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <search id="header-search" class="right-menu-item" />
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
@@ -52,7 +51,6 @@ import Hamburger from '@/components/Hamburger';
 import Screenfull from '@/components/Screenfull';
 import RoleSwitch from '@/components/RoleSwitch';
 import SizeSelect from '@/components/SizeSelect';
-import Search from '@/components/HeaderSearch';
 import avatarGif from '@/assets/avatar.gif';
 
 export default {
@@ -61,8 +59,7 @@ export default {
     Hamburger,
     Screenfull,
     SizeSelect,
-    RoleSwitch,
-    Search
+    RoleSwitch
   },
   computed: {
     ...mapGetters(['sidebar', 'avatar', 'device'])

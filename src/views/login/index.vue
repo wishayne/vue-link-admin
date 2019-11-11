@@ -9,7 +9,7 @@
       label-position="left"
     >
       <div class="title-container">
-        <h3 class="title">Vue-Link-Admin</h3>
+        <h3 class="title">大服务设计与运行平台</h3>
       </div>
 
       <el-form-item prop="username">
@@ -121,7 +121,7 @@ export default {
       redirect: undefined,
       otherQuery: {},
       bgImg: {
-        backgroundImage: "url(" + require("../../assets/bk.jpg") + ")",
+        backgroundImage: "url(" + require("../../assets/background.png") + ")",
         backgroundRepeat: "no-repeat"
       }
     };

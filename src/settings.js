@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'Vue Link Admin',
+  title: '大服务设计与运行平台',
 
   /**
    * @type {boolean} true | false
