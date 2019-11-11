@@ -122,7 +122,7 @@
                 :key="item.id"
                 :label="item.id"
                 style="padding-top:20px"
-              >{{ item.id }}，{{ item.name }}</el-checkbox>
+              >{{ item.name }}</el-checkbox>
             </el-checkbox-group>
           </el-tab-pane>
         </el-tabs>
@@ -147,6 +147,17 @@ import { roles } from '@/api/permission/role'
 import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
+const defaultUser = {
+  uid: '',
+  name: '',
+  password: '',
+  vserName: '',
+  mobile: '',
+  state: undefined,
+  email: '',
+  roleIds: []
+}
+
 export default {
   name: 'User',
   components: { Pagination },
@@ -158,16 +169,6 @@ export default {
         { label: '真实姓名', key: 'vserName' },
         { label: '手机号', key: 'mobile' }
       ],
-      user: {
-        uid: '',
-        name: '',
-        password: '',
-        vserName: '',
-        mobile: '',
-        state: undefined,
-        email: '',
-        roleIds: []
-      },
       tableKey: 0,
       list: null,
       total: 0,
@@ -180,6 +181,7 @@ export default {
         mobile: '',
         state: undefined
       },
+      user: Object.assign({}, defaultUser),
       defaultProps: {
         children: 'childrens',
         label: 'name'
@@ -256,15 +258,14 @@ export default {
       this.dialogType = 'edit'
       this.activeName = 'first'
       this.dialogVisible = true
+      scope.row.roleIds = []
       this.user = deepClone(scope.row)
-      this.user.roleIds = []
+      const roleIds = this.user.roleIds
       this.$nextTick(() => {
         if (this.user.roles) {
-          const roleIds = []
           this.user.roles.forEach(role => {
             roleIds.push(role.id)
           })
-          this.user.roleIds = roleIds
         }
       })
     },
