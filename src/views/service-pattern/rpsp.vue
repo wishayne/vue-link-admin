@@ -103,7 +103,7 @@
         modal3: false,
         rpAllIdNameList: [],
         update(){
-            this.$ajax.get('http://spalgorithm.free.idcfengye.com/api/updatep')
+            this.$ajax.get('http://127.0.0.1:8000/api/updatep')
         },
           patternData:[],
           pattern:[
