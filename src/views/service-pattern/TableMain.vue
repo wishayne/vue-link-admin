@@ -242,7 +242,7 @@
                                 click: () => {
                                     /*if (params.row.$processEdit) {
                                         this.opensp = "保存中，请稍后..."
-                                        this.$ajax.get('http://127.0.0.1:8000/api/savesp?inputfile=' + params.row.spId)
+                                        this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/savesp?inputfile=' + params.row.spId)
                                             .then(res => {
                                                 params.row.spProcess = params.row.spId
                                                 if (res.data.msg == 'success') {
@@ -286,7 +286,7 @@
                             on: {
                                 click: () => {
                                     this.opensp = "执行中"
-                                    let url = 'http://127.0.0.1:8000/api/runsp?inputfile=' + params.row.spId
+                                    let url = 'http://sp-algorithm-linan.192.168.42.159.nip.io/api/runsp?inputfile=' + params.row.spId
                                     this.$ajax.get(url).then(data =>{
                                         this.opensp = data.data.msg
                                     })
