@@ -38,7 +38,7 @@
       </el-table-column>
       <el-table-column align="center" label="提出时间">
         <template slot-scope="scope">
-          <span v-if="scope.row.__level === 0">{{ scope.row.requireInfo.timestamp }}</span>
+          <span v-if="scope.row.__level === 0">{{ handleTime(scope.row.requireInfo.timestamp) }}</span>
         </template>
       </el-table-column>
       <!--            状态-->
@@ -63,13 +63,18 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-button
-      type="primary"
-      icon="el-icon-plus"
-      circle
-      class="add-require"
-      @click="$router.push({path:'/requires/add-require/index'})"
-    />
+    <div class="add-require">
+      <el-row>
+        <el-button type="success" icon="el-icon-upload2" circle @click="newServiceScheme" />
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          circle
+          @click="$router.push({path:'/requires/add-require/index'})"
+        />
+      </el-row>
+
+    </div>
 
     <el-dialog
       :visible.sync="visible"
@@ -84,6 +89,7 @@
 <script>
 import baseUrl from '../../../utils/api'
 import { requireState } from '../../../utils/restrict-options'
+import { handleTime } from './util'
 import qs from 'qs'
 export default {
   name: 'AllRequires',
@@ -191,7 +197,9 @@ export default {
       const requireId = scope.row.goal.requireId
       this.loading = true
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
+        response.data.requireRootName = scope.row.goal.content
         const result = response.data
+        console.log(result)
         // if (process.env.NODE_ENV === 'production') {
         this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
           this.loading = false
@@ -217,7 +225,7 @@ export default {
         this.loading = true
         this.visible = false
         // TODO 异常处理
-        this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.file}&url=${this.delsubData.url}`).then(res => {
+        this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
           this.loading = false
           if (res.data.msg !== 'success') {
             this.$message.error('服务方案生成失败' + res.data.msg)
@@ -259,7 +267,20 @@ export default {
       }).catch((respose) => {
         this.$message.error('执行失败')
       })
-    }
+    },
+    newServiceScheme() {
+      console.log(`${baseUrl.matchUrl}/api/addmodel`)
+      this.$ajax.get(`${baseUrl.matchUrl}/api/addmodel`).then(res => {
+        if (res.data.msg === 'success') {
+          window.open(res.data.url)
+        } else {
+          this.$message.error('服务方案新建失败')
+        }
+      }).catch(_ => {
+        this.$message.error('服务方案新建失败')
+      })
+    },
+    handleTime: handleTime
   }
 }
 </script>
@@ -290,7 +311,7 @@ export default {
       td
         padding 0 !important
         height 30px !important
-        line-height 30px !important
+        line-height 30px !importantz
     .add-require
       position fixed
       right 5%

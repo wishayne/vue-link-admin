@@ -21,7 +21,11 @@
       <el-table-column prop="info.name" label="名字" align="center" />
       <el-table-column prop="info.description" label="描述" align="center" />
       <el-table-column prop="info.domain" label="业务领域" align="center" />
-      <el-table-column prop="info.timestamp" label="创建时间" align="center" />
+      <el-table-column prop="info.timestamp" label="创建时间" align="center">
+        <template slot-scope="scope">
+          {{ handleTime(scope.row.info.timestamp) }}
+        </template>
+      </el-table-column>
     </el-table>
     <br>
     <h2 style="text-align: center">
@@ -69,6 +73,7 @@
 </template>
 
 <script>
+import { handleTime } from '../all-requires/util'
 export default {
   name: 'AllRP',
   data() {
@@ -175,7 +180,8 @@ export default {
         this.data = response.data
         this.selectedRP = { info: {}}
       })
-    }
+    },
+    handleTime: handleTime
   }
 }
 </script>
