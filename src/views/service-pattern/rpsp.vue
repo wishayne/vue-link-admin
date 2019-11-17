@@ -103,7 +103,7 @@
         modal3: false,
         rpAllIdNameList: [],
         update(){
-            this.$ajax.get('http://127.0.0.1:8000/api/updatep')
+            this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/updatep')
         },
           patternData:[],
           pattern:[
@@ -757,7 +757,7 @@
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
-      this.$ajax('http://icesrequire.free.idcfengye.com/api/get-all-rps').then(res => {
+      this.$ajax('http://require-linan.192.168.42.159.nip.io/require/api/get-all-rps').then(res => {
           let that = this
           that.rpList = [{value:" "}]
           res.data.forEach(data=>{
