@@ -166,7 +166,7 @@ export default {
     return {
       searchOptions: [
         { label: '登录名', key: 'name' },
-        { label: '真实姓名', key: 'vserName' },
+        { label: '姓名', key: 'vserName' },
         { label: '手机号', key: 'mobile' }
       ],
       tableKey: 0,
