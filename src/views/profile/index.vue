@@ -11,7 +11,6 @@
             <div class="user-profile">
               <div class="box-center">
                 <pan-thumb
-                  :image="userinfo.avatar"
                   :height="'100px'"
                   :width="'100px'"
                   :hoverable="false"

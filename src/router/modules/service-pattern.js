@@ -5,7 +5,7 @@ import Layout from '@/layout'
 const spRouter = {
   path: '/sp',
   component: Layout,
-  name: 'sp',
+  name: 'spManagement',
   alwaysShow: true,
   meta: {
     title: '服务模式操作',

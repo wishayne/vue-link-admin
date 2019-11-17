@@ -258,8 +258,9 @@ export default {
       this.dialogType = 'edit'
       this.activeName = 'first'
       this.dialogVisible = true
-      scope.row.roleIds = []
+      // scope.row.roleIds = []
       this.user = deepClone(scope.row)
+      this.$set(this.user, 'roleIds', [])
       const roleIds = this.user.roleIds
       this.$nextTick(() => {
         if (this.user.roles) {

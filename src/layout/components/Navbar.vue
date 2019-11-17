@@ -62,7 +62,7 @@ export default {
     RoleSwitch
   },
   computed: {
-    ...mapGetters(['sidebar', 'avatar', 'device'])
+    ...mapGetters(['sidebar', 'device'])
   },
   data() {
     return {

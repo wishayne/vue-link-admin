@@ -5,9 +5,9 @@ import Layout from '@/layout'
 const permissionRouter = {
   path: '/permission',
   component: Layout,
-  name: 'Permission',
+  name: 'PermissionManagement',
   meta: {
-    title: '系统权限',
+    title: '权限管理',
     icon: 'lock'
   },
   children: [
@@ -30,9 +30,9 @@ const permissionRouter = {
     {
       path: '/permission/permission',
       component: () => import('@/views/permission/permission'),
-      name: 'Permission',
+      name: 'MenusPermission',
       meta: {
-        title: '权限管理'
+        title: '菜单管理'
       }
     }
   ]
