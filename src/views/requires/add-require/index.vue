@@ -28,8 +28,8 @@ export default {
   },
   methods: {
     uploadGoalTree() {
-      this.axios.post(`${process.env.VUE_APP_BASE_URL}/api/upload-goal-tree`, {
-        user: this.$route.query.userId,
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/upload-goal-tree`, {
+        user: this.$store.getters.userinfo.name,
         data: this.goalTree
       }).then((response) => {
         this.$message({

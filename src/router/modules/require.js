@@ -33,7 +33,8 @@ const requireRouter = {
       name: 'add-require',
       meta: {
         title: '新增需求', noCache: true
-      }
+      },
+      hidden: true
     },
     {
       path: '/requires/add-rp/index',
@@ -41,7 +42,8 @@ const requireRouter = {
       name: 'add-rp',
       meta: {
         title: '新增需求模式', noCache: true
-      }
+      },
+      hidden: true
     }
   ]
 }

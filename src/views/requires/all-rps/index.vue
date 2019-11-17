@@ -62,7 +62,7 @@
       icon="el-icon-plus"
       circle
       class="add-rp"
-      @click="$router.push({path:'addRP',query:{userId:$route.query.userId}})"
+      @click="$router.push({path:'/requires/add-rp/index'})"
     />
   </div>
 
@@ -87,7 +87,7 @@ export default {
     }
   },
   mounted() {
-    this.axios.get(`${process.env.VUE_APP_BASE_URL}/api/get-all-rps`).then(response => {
+    this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-rps`).then(response => {
       this.data = response.data
     })
   },
@@ -171,7 +171,7 @@ export default {
       //    TODO 修改
     },
     search() {
-      this.axios.get(`${process.env.VUE_APP_BASE_URL}/api/search-rp?detail=${this.detail}`).then(response => {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-rp?detail=${this.detail}`).then(response => {
         this.data = response.data
         this.selectedRP = { info: {}}
       })

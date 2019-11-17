@@ -68,7 +68,7 @@
       icon="el-icon-plus"
       circle
       class="add-require"
-      @click="$router.push({path:'addRequire',query:{userId:$route.query.userId}})"
+      @click="$router.push({path:'/requires/add-require/index'})"
     />
 
     <el-dialog
@@ -108,9 +108,12 @@ export default {
     }
   },
   mounted() {
-    this.axios.get(`${process.env.VUE_APP_BASE_URL}/api/get-all-requests?userId=${this.$route.query.userId}`).then(response => {
-      this.data = response.data
-    })
+    this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.$store.getters.userinfo.name}`)
+      .then(response => {
+        this.data = response.data
+      }).catch(_ => {
+        this.$message.error('没有需求录入')
+      })
   },
   methods: {
     getRestrictString(r) {
@@ -187,10 +190,10 @@ export default {
     matching(scope) {
       const requireId = scope.row.goal.requireId
       this.loading = true
-      this.axios.get(`${process.env.VUE_APP_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
         const result = response.data
         // if (process.env.NODE_ENV === 'production') {
-        this.axios.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
+        this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
           this.loading = false
           // //TODO 异常
           this.visible = true
@@ -214,14 +217,14 @@ export default {
         this.loading = true
         this.visible = false
         // TODO 异常处理
-        this.axios.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.file}&url=${this.delsubData.url}`).then(res => {
+        this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.file}&url=${this.delsubData.url}`).then(res => {
           this.loading = false
           if (res.data.msg !== 'success') {
             this.$message.error('服务方案生成失败' + res.data.msg)
             return
           }
           // 更改状态
-          this.axios.post(`${process.env.VUE_APP_BASE_URL}/api/modify-state`, qs.stringify({
+          this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
             requireId: this.selectRequireId,
             url: this.flowableUrl
           }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
@@ -236,9 +239,10 @@ export default {
       })
     },
     search() {
-      this.axios.get(`${process.env.VUE_APP_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$route.query.userId}`).then(response => {
-        this.data = response.data
-      })
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}`)
+        .then(response => {
+          this.data = response.data
+        })
     },
     handleState(id) {
       return requireState[id]
@@ -247,7 +251,7 @@ export default {
       window.open(url)
     },
     execute(url) {
-      this.axios.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}`).then((response) => {
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}`).then((response) => {
         this.$message({
           message: '执行成功',
           type: 'success'

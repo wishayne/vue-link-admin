@@ -47,7 +47,7 @@ export default {
   },
   methods: {
     uploadGoalTree() {
-      this.axios.post(`${process.env.VUE_APP_BASE_URL}/api/upload-require-pattern`, {
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/upload-require-pattern`, {
         info: this.info,
         data: this.requirePattern
       }).then((response) => {
