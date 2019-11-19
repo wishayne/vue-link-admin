@@ -26,7 +26,7 @@
             <i class="permission_toggleFold" :class="toggleFoldingClass(scope.row)" @click="toggleFoldingStatus(scope.row)" />
             {{ scope.row.goal.content }}
             <span v-if="typeof scope.row.rpInfo !== 'undefined' && scope.row.showRpResult">
-              <el-tag size="mini" :color="calcColor(scope.row.rpInfo.name)" effect="dark">{{scope.row.rpInfo.name}}</el-tag>
+              <el-tag size="mini" :color="calcColor(scope.row.rpInfo.name)" effect="dark">{{ scope.row.rpInfo.name }}</el-tag>
             </span>
           </p>
         </template>
@@ -277,7 +277,7 @@ export default {
       window.open(url)
     },
     execute(url) {
-      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}`).then((response) => {
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}&username=${this.$store.getters.userinfo.name}`).then((response) => {
         this.$message({
           message: '执行成功',
           type: 'success'
@@ -292,7 +292,7 @@ export default {
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
         const map = rpRequireMap(response.data)
         ergodicGoals(this.data, (item) => {
-          if (typeof map[item.goal.goalId] !== "undefined") {
+          if (typeof map[item.goal.goalId] !== 'undefined') {
             this.$set(item, 'showRpResult', true)
             this.$set(item, 'rpInfo', map[item.goal.goalId])
           }
