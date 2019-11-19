@@ -1,6 +1,6 @@
 <template>
   <div id="add-rp">
-    <h1>需求模式</h1>
+    <h1>新增需求模式</h1>
     <br>
     <el-card class="box-card">
       <el-form ref="form" label-width="80px">
