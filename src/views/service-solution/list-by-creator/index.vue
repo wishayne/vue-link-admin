@@ -1,22 +1,69 @@
 <template>
   <div>
-    <div v-for="(session,index) in tableData" :key="index">
-      <p>sessionId:{{ session.sessionId }}</p>
-      <p v-for="(status,id2) in session.statuses" :key="id2">
-        &nbsp;&nbsp;<span>服务名称：{{ status.serviceInfo.serviceName }}</span>&nbsp;&nbsp;
-        <span>服务描述：{{ status.serviceInfo.textDescription }}</span>&nbsp;&nbsp;
-        <span>服务运行状态：{{ status.serviceStage }}</span>&nbsp;&nbsp;
-        <span>服务当前结果：{{ status.currentValue }}</span>&nbsp;&nbsp;
-        <span>服务当前所指定用户：{{ status.userAssignee }}</span>&nbsp;&nbsp;
-      </p>
-      <img :src="$http.defaults.baseURL+'process/download/'+session.processId">
-      <button @click="continueExecute(session)">继续执行</button>
-    </div>
-
-    <iframe :src="sub_url" width="400px" height="500px" />
+    <el-card v-for="(session,index) in tableData" :key="index" class="box-card">
+      <el-container>
+        <el-header>
+          <p>sessionId:{{ session.sessionId }}</p>
+          <p>需求发起者:{{ session.creator }}</p>
+        </el-header>
+        <el-main>
+          <el-row>
+            <el-col :span="14">
+              <el-table
+                :data="session.statuses"
+                style="width: 100%;"
+                height="450"
+                border
+              >
+                <el-table-column label="" width="50">
+                  <template slot-scope="scope">
+                    <span>{{ scope.$index+ 1 }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="服务名称" width="90">
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.serviceInfo.serviceName }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="服务描述" width="90">
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.serviceInfo.textDescription }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="相关角色" width="90">
+                  <template slot-scope="scope">
+                    <span>{{ Array.from(new Set(scope.row.serviceInfo.roles.map(role=>role.id.name))).join(',') }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="运行状态" width="90">
+                  <template slot-scope="scope">
+                    <span>
+                      {{ scope.row.serviceStage=='RUNNING'?'运行中':'' }}
+                      {{ scope.row.serviceStage=='CREATED'?'未开始':'' }}
+                      {{ scope.row.serviceStage=='FINISH'?'已完成':'' }}
+                    </span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="当前结果" width="90">
+                  <template slot-scope="scope">
+                    <span>
+                      {{ scope.row.currentValue }}
+                    </span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-col>
+            <el-col :span="6">
+              <img :src="$http.defaults.baseURL+'process/download/'+session.processId">
+            </el-col>
+          </el-row>
+        </el-main>
+      </el-container>
+    </el-card>
   </div>
 </template>
 <script>
+import request from '@/utils/request2'
 export default {
   components: {
 
@@ -30,8 +77,12 @@ export default {
     }
   },
   mounted: function() {
-    this.$http.get('/process/sessions')
-      .then(response => response.data)
+    request({
+      url: `/process/sessions`,
+      method: 'get'
+    })
+    // this.$http.get('/process/sessions')
+    //   .then(response => response.data)
       .then(data => {
         this.tableData = Object.values(data)
       })
