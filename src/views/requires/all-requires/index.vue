@@ -1,5 +1,6 @@
 <template>
   <div class="all-requires">
+    <iframe src="http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/" style="display: none" />
     <h1 style="text-align: center">
       需求维护
     </h1>
@@ -277,7 +278,7 @@ export default {
       window.open(url)
     },
     execute(url) {
-      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}&username=${this.$store.getters.userinfo.name}`).then((response) => {
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&username=${this.$store.getters.userinfo.name}`).then((response) => {
         this.$message({
           message: '执行成功',
           type: 'success'

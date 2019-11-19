@@ -1,6 +1,6 @@
 <template>
   <div id="add-require">
-    <h1>目标树</h1>
+    <h1>新增需求</h1>
     <br>
     <tree-table :data="goalTree" :is-tree="true" @submit="uploadGoalTree" />
     <br>
