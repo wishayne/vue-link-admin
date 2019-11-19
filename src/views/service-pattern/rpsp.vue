@@ -186,22 +186,83 @@
               title: 'value',
               key: 'value',
               render: (h, params) => {
-                  if (params.row.$isEdit) {
-                      return h("Input", {
+                  function edittype(type){
+                      if (type === "值") {
+                          return h('div', [h("Input", {
+                              props: {
+                                  value: params.row.value
+                              },
+                              on: {
+                                  input: function (event) {
+                                      params.row.value = event;
+                                  }
+                              }
+                          })])
+                      }
+                      else return h('div', [h("Input", {
                           props: {
-                              value: params.row.value
+                              value: params.row.value_left
                           },
                           on: {
                               input: function (event) {
-                                  params.row.value = event;
+                                  params.row.value_left = event;
                               }
                           }
-                      });
+                      }), h("Input", {
+                          props: {
+                              value: params.row.value_right
+                          },
+                          on: {
+                              input: function (event) {
+                                  params.row.value_right = event;
+                              }
+                          }
+                      })])
+                  }
+
+                  if (params.row.$isEdit) {
+                      return h('div', [edittype(params.row.type)])
                   } else {
                       return h("div", params.row.value);
                   }
               }
-          },{
+          },
+            {
+                title: '类型',
+                key: 'type',
+                render: (h, params) => {
+                    let contexttype = [
+                        {
+                            value: "范围"
+                        },{
+                            value: "值"
+                        }
+                    ];
+                    let type = params.row.type;
+                    if (params.row.$isEdit) {
+                        return h('div', [h("Select", {
+                            props: {transfer:true},
+                            on: {
+                                "on-change": (event) => {
+                                    /*this.handleType(params.row, event);*/
+                                    params.row.type = event;
+                                    type = event;
+                                }
+                            }
+                        }, contexttype.map((item) => {
+                            return h('Option', {
+                                props: {
+                                    value: item.value,
+                                    label: item.value
+                                }
+                            })
+                        }))])
+                    } else {
+                        return h("div", params.row.type);
+                    }
+                }
+            },
+            {
               title: '操作',
               key: 'action',
               render: (h, params) => {
@@ -218,11 +279,35 @@
                           on: {
                               click: () => {
                                   if (params.row.$isEdit) {
-                                      this.handleSave(params.row);
-                                      this.contextData[params.index]['key'] = params.row.key;
-                                      this.contextData[params.index]['value'] = params.row.value;
-                                      console.log(this.contextData)
+                                      if (params.row.type === "范围") {
+                                          if ((isNaN(parseFloat(params.row.value_left.toString()))) || (isNaN(parseFloat(params.row.value_right.toString()))) || (parseInt(params.row.value_left.toString()) > parseInt(params.row.value_right.toString()))){
+                                              if (params.row.key === "时间") {
+                                                  /*判断时间合法*/
+                                                  params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
+                                                  this.handleSave(params.row);
+                                                  this.contextData[params.index]['type'] = params.row.type;
+                                                  this.contextData[params.index]['key'] = params.row.key;
+                                                  this.contextData[params.index]['value'] = params.row.value;
+                                              } else alert("请输入正确的范围")
+                                          } else {
+                                              params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
+                                              this.handleSave(params.row);
+                                              this.contextData[params.index]['type'] = params.row.type;
+                                              this.contextData[params.index]['key'] = params.row.key;
+                                              this.contextData[params.index]['value'] = params.row.value;
+                                          }
+                                      } else {
+                                          this.handleSave(params.row);
+                                          this.contextData[params.index]['type'] = params.row.type;
+                                          this.contextData[params.index]['key'] = params.row.key;
+                                          this.contextData[params.index]['value'] = params.row.value;
+                                      }
                                   } else {
+                                      if (params.row.value.search('~')>-1) {
+                                          params.row.type = '范围';
+                                          params.row.value_left = params.row.value.substr(0, params.row.value.search('~'));
+                                          params.row.value_right = params.row.value.substr(params.row.value.search('~') + 1, params.row.value.length)
+                                      } else params.row.type = "值";
                                       this.handleEdit(params.row);
                                   }
                               }
@@ -284,23 +369,83 @@
           },{
               title: 'value',
               key: 'value',
-              render: (h, params) => {
-                  if (params.row.$isEdit) {
-                      return h("Input", {
-                          props: {
-                              value: params.row.value
-                          },
-                          on: {
-                              input: function (event) {
-                                  params.row.value = event;
-                              }
-                          }
-                      });
-                  } else {
-                      return h("div", params.row.value);
-                  }
-              }
+                render: (h, params) => {
+                    function edittype(type){
+                        if (type === "值") {
+                            return h('div', [h("Input", {
+                                props: {
+                                    value: params.row.value
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.value = event;
+                                    }
+                                }
+                            })])
+                        }
+                        else return h('div', [h("Input", {
+                            props: {
+                                value: params.row.value_left
+                            },
+                            on: {
+                                input: function (event) {
+                                    params.row.value_left = event;
+                                }
+                            }
+                        }), h("Input", {
+                            props: {
+                                value: params.row.value_right
+                            },
+                            on: {
+                                input: function (event) {
+                                    params.row.value_right = event;
+                                }
+                            }
+                        })])
+                    }
+
+                    if (params.row.$isEdit) {
+                        return h('div', [edittype(params.row.type)])
+                    } else {
+                        return h("div", params.row.value);
+                    }
+                }
           },{
+                title: '类型',
+                key: 'type',
+                render: (h, params) => {
+                    let contexttype = [
+                        {
+                            value: "范围"
+                        },{
+                            value: "值"
+                        }
+                    ];
+                    let type = params.row.type;
+                    if (params.row.$isEdit) {
+                        return h('div', [h("Select", {
+                            props: {transfer:true},
+                            on: {
+                                "on-change": (event) => {
+                                    /*this.handleType(params.row, event);*/
+                                    params.row.type = event;
+                                    type = event;
+                                }
+                            }
+                        }, contexttype.map((item) => {
+                            return h('Option', {
+                                props: {
+                                    value: item.value,
+                                    label: item.value
+                                }
+                            })
+                        }))])
+                    } else {
+                        return h("div", params.row.type);
+                    }
+                }
+            },
+            {
               title: '操作',
               key: 'action',
               render: (h, params) => {
@@ -317,10 +462,35 @@
                           on: {
                               click: () => {
                                   if (params.row.$isEdit) {
-                                      this.handleSave(params.row);
-                                      this.contextData1[params.index]['key'] = params.row.key;
-                                      this.contextData1[params.index]['value'] = params.row.value;
+                                      if (params.row.type === "范围") {
+                                          if ((isNaN(parseFloat(params.row.value_left.toString()))) || (isNaN(parseFloat(params.row.value_right.toString()))) || (parseInt(params.row.value_left.toString()) > parseInt(params.row.value_right.toString()))){
+                                              if (params.row.key === "时间") {
+                                                  /*判断时间合法*/
+                                                  params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
+                                                  this.handleSave(params.row);
+                                                  this.contextData1[params.index]['type'] = params.row.type;
+                                                  this.contextData1[params.index]['key'] = params.row.key;
+                                                  this.contextData1[params.index]['value'] = params.row.value;
+                                              } else alert("请输入正确的范围")
+                                          } else {
+                                              params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
+                                              this.handleSave(params.row);
+                                              this.contextData1[params.index]['type'] = params.row.type;
+                                              this.contextData1[params.index]['key'] = params.row.key;
+                                              this.contextData1[params.index]['value'] = params.row.value;
+                                          }
+                                      } else {
+                                          this.handleSave(params.row);
+                                          this.contextData1[params.index]['type'] = params.row.type;
+                                          this.contextData1[params.index]['key'] = params.row.key;
+                                          this.contextData1[params.index]['value'] = params.row.value;
+                                      }
                                   } else {
+                                      if (params.row.value.search('~')>-1) {
+                                          params.row.type = '范围';
+                                          params.row.value_left = params.row.value.substr(0, params.row.value.search('~'));
+                                          params.row.value_right = params.row.value.substr(params.row.value.search('~') + 1, params.row.value.length)
+                                      } else params.row.type = "值";
                                       this.handleEdit(params.row);
                                   }
                               }
@@ -381,7 +551,7 @@
               //@h 是一个构造器，可以使用其创建新组建
               //@params 是表格的数据，params.row可以获取当前行的数据{
                 let context = JSON.parse(params.row.context);
-                let row_contextlist = []
+                let row_contextlist = [];
                 for (let i in context){
                     row_contextlist.push(h('br'));
                     row_contextlist.push(h('p',i + ' : ' + context[i]))
@@ -395,13 +565,18 @@
                         on: {
                             'click':()=>{
                                 let context = JSON.parse(params.row.context);
+                                let type = "";
                                 this.nowdata = params.row
                                 this.contextData = [];
                                 for (var key in context) {
+                                    if (context[key].search('~')>-1){
+                                        type = "范围"
+                                    } else type = "值";
                                     this.contextData.push({
                                         $isEdit:false,
                                         key:key,
-                                        value:context[key]
+                                        value:context[key],
+                                        type:type
                                     })
                                 }
                                 this.modal1 = true
@@ -669,7 +844,7 @@
                                               ];*/
 
                                           for (var i=0;i<this.rpAllIdNameList.length;i++){
-                                              if ((this.rpAllIdNameList[i].rpName.search(params.row.rpName)) != -1 || (params.row.rpName.length == 0)){
+                                              if ((this.rpAllIdNameList[i].rpName.search(params.row.rpName)) !== -1 || (params.row.rpName.length === 0)){
                                                   rpIdNameList.push({
                                                       "rpId":this.rpAllIdNameList[i].rpId,
                                                       "rpName":this.rpAllIdNameList[i].rpName
@@ -813,6 +988,9 @@
       handleSave(row) {
         this.$set(row, "$isEdit", false);
       },
+      handleType(row, event) {
+        this.$set(row, "type", event);
+      },
       addRow(){
           console.log(this.searchData)
           this.searchData.push({
@@ -831,14 +1009,16 @@
           this.contextData.push({
               $isEdit:false,
               key:"",
-              value:""
+              value:"",
+              type:""
           })
       },
       addcontext1(){
           this.contextData1.push({
               $isEdit:false,
               key:"",
-              value:""
+              value:"",
+              type:""
           })
       },
         clearcontext1(){

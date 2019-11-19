@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import TreeTable from '@/components/TreeTable/index'
+import TreeTable from '.././component/TreeTable'
 export default {
   name: 'AddRequire',
   components: {

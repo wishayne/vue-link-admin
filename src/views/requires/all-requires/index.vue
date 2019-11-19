@@ -51,10 +51,13 @@
       <el-table-column align="center" min-width="100" label="操作">
         <template slot-scope="scope">
           <span v-if="scope.row.requireInfo.state === 0">
-            <el-button v-if="scope.row.__level === 0" type="text" @click="matching(scope)">匹配</el-button>
+            <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配</el-button>
             <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
               <el-button type="text">修改</el-button>
             </el-tooltip>
+          </span>
+          <span v-else-if="scope.row.requireInfo.state === 1">
+            <el-button v-if="scope.row.__level === 0" type="text" @click="matchSp(scope)">匹配</el-button>
           </span>
           <span v-else>
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
@@ -65,7 +68,7 @@
     </el-table>
     <div class="add-require">
       <el-row>
-        <el-button type="success" icon="el-icon-upload2" circle @click="newServiceScheme" />
+        <!--        <el-button type="success" icon="el-icon-upload2" circle @click="newServiceScheme" />-->
         <el-button
           type="primary"
           icon="el-icon-plus"
@@ -87,8 +90,8 @@
 </template>
 
 <script>
-import baseUrl from '../../../utils/api'
-import { requireState } from '../../../utils/restrict-options'
+import baseUrl from './api'
+import { requireState } from './restrict-options'
 import { handleTime } from './util'
 import qs from 'qs'
 export default {
@@ -193,32 +196,28 @@ export default {
       }
       return parent
     },
-    matching(scope) {
+    matchRp(scope) {
       const requireId = scope.row.goal.requireId
       this.loading = true
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
-        response.data.requireRootName = scope.row.goal.content
-        const result = response.data
-        console.log(result)
-        // if (process.env.NODE_ENV === 'production') {
-        this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
-          this.loading = false
-          // //TODO 异常
-          this.visible = true
-          this.flowableUrl = response.data.url
-          this.delsubData.file = response.data.savepath.split('/').reverse()[1]
-          this.delsubData.url = response.data.url.split('=').reverse()[0]
-        })
-        // } else {
-        //     this.visible = true;
-        //     this.flowableUrl = 'https://www.baidu.com';
-        //     this.delsubData.file = 'test';
-        //     this.delsubData.url = 'testUrl';
-        // }
-        this.selectRequireId = requireId
+        // response.data.requireRootName = scope.row.goal.content
+        // const result = response.data
+        this.loading = false
+        // this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
+        //   // //TODO 异常
+        //   this.visible = true
+        //   this.flowableUrl = response.data.url
+        //   this.delsubData.file = response.data.savepath.split('/').reverse()[1]
+        //   this.delsubData.url = response.data.url.split('=').reverse()[0]
+        // })
+        // this.selectRequireId = requireId
+        scope.row.requireInfo.state = 1
       }).catch(response => {
         this.$message.error('匹配失败')
       })
+    },
+    matchSp(scope) {
+      console.log()
     },
     handleClose(done) {
       this.$confirm('确认关闭？').then(_ => {
