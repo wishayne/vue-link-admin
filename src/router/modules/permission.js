@@ -28,6 +28,14 @@ const permissionRouter = {
       }
     },
     {
+      path: '/permission/user-group',
+      component: () => import('@/views/permission/user-group'),
+      name: 'UserGroup',
+      meta: {
+        title: '用户组管理'
+      }
+    },
+    {
       path: '/permission/permission',
       component: () => import('@/views/permission/permission'),
       name: 'MenusPermission',
