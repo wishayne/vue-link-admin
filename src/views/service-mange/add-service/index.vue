@@ -8,7 +8,7 @@
         </el-form-item>
         <el-form-item label="服务类别">
           <el-tree-select
-            v-model="addForm.serviceCategory"
+            v-model="addForm.categories"
             :data="treeData"
             node-key="id"
             size="mini"
@@ -178,11 +178,23 @@ export default {
       this.$refs['addForm'].validate((valid) => {
         if (valid) {
           console.info(this.addForm)
+          this.addForm.categories = this.addForm.categories.map(i => {
+            return {
+              id: i
+            }
+          })
+
+          if (typeof (this.addForm.provider) === 'number') {
+            this.addForm.provider = {
+              id: this.addForm.provider
+            }
+          }
+
           if (!this.addForm.serviceName.match(/[a-zA-Z_0-9]{1,20}/)) {
             alert('服务名称长度在 2 到 20 个字符,由英文字母_和数字组成')
             return
           }
-          if (this.deployment == null || this.deployment.deploymentType == null) {
+          if (this.addForm.deployment == null || this.addForm.deployment.deploymentType == null) {
             alert('服务接口定义文件未上传或文件中未定义服务部署内容')
             return
           }
