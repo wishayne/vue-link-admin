@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import TreeTable from '@/components/TreeTable/index'
+import TreeTable from '.././component/TreeTable'
 export default {
   name: 'AddRP',
   components: {
@@ -55,7 +55,7 @@ export default {
           message: '提交成功',
           type: 'success'
         })
-      }).catch((respose) => {
+      }).catch((response) => {
         this.$message.error('提交失败')
       })
     }
