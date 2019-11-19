@@ -25,6 +25,9 @@
           <p :style="`margin-left: ${scope.row.__level * 15}px;margin-top:0;margin-bottom:0`">
             <i class="permission_toggleFold" :class="toggleFoldingClass(scope.row)" @click="toggleFoldingStatus(scope.row)" />
             {{ scope.row.goal.content }}
+            <span v-if="typeof scope.row.rpInfo !== 'undefined' && scope.row.showRpResult">
+              <el-tag size="mini" :color="calcColor(scope.row.rpInfo.name)" effect="dark">{{ scope.row.rpInfo.name }}</el-tag>
+            </span>
           </p>
         </template>
       </el-table-column>
@@ -51,13 +54,17 @@
       <el-table-column align="center" min-width="100" label="操作">
         <template slot-scope="scope">
           <span v-if="scope.row.requireInfo.state === 0">
-            <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配</el-button>
+            <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配需求模式</el-button>
             <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
               <el-button type="text">修改</el-button>
             </el-tooltip>
           </span>
           <span v-else-if="scope.row.requireInfo.state === 1">
-            <el-button v-if="scope.row.__level === 0" type="text" @click="matchSp(scope)">匹配</el-button>
+            <el-button v-if="scope.row.__level === 0" type="text" @click="matchSp(scope)">生成服务方案</el-button>
+            <span v-if="scope.row.__level === 0 ">
+              <el-button v-if="scope.row.showRpResult" type="text" @click="hiddenMatchRp(scope)">隐藏匹配方案</el-button>
+              <el-button v-else type="text" @click="showMatchRp(scope)">查看匹配方案</el-button>
+            </span>
           </span>
           <span v-else>
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
@@ -92,7 +99,7 @@
 <script>
 import baseUrl from './api'
 import { requireState } from './restrict-options'
-import { handleTime } from './util'
+import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
 import qs from 'qs'
 export default {
   name: 'AllRequires',
@@ -117,12 +124,7 @@ export default {
     }
   },
   mounted() {
-    this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.$store.getters.userinfo.name}`)
-      .then(response => {
-        this.data = response.data
-      }).catch(_ => {
-        this.$message.error('没有需求录入')
-      })
+    this.getAllRequire()
   },
   methods: {
     getRestrictString(r) {
@@ -196,28 +198,45 @@ export default {
       }
       return parent
     },
+    getAllRequire() {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.$store.getters.userinfo.name}`)
+        .then(response => {
+          this.data = response.data
+        }).catch(_ => {
+          this.$message.error('没有需求录入')
+        })
+    },
     matchRp(scope) {
       const requireId = scope.row.goal.requireId
       this.loading = true
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
-        // response.data.requireRootName = scope.row.goal.content
-        // const result = response.data
         this.loading = false
-        // this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
-        //   // //TODO 异常
-        //   this.visible = true
-        //   this.flowableUrl = response.data.url
-        //   this.delsubData.file = response.data.savepath.split('/').reverse()[1]
-        //   this.delsubData.url = response.data.url.split('=').reverse()[0]
-        // })
-        // this.selectRequireId = requireId
-        scope.row.requireInfo.state = 1
+        this.$message({
+          message: '匹配成功',
+          type: 'success'
+        })
+        this.getAllRequire()
       }).catch(response => {
         this.$message.error('匹配失败')
       })
     },
     matchSp(scope) {
-      console.log()
+      const requireId = scope.row.goal.requireId
+      this.loading = true
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
+        response.data.requireRootName = scope.row.goal.content
+        const result = response.data
+        this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
+          this.loading = false
+          this.visible = true
+          this.flowableUrl = response.data.url
+          this.delsubData.file = response.data.savepath.split('/').reverse()[1]
+          this.delsubData.url = response.data.url.split('=').reverse()[0]
+        })
+        this.selectRequireId = requireId
+      }).catch(_ => {
+        this.$message.error('匹配失败')
+      })
     },
     handleClose(done) {
       this.$confirm('确认关闭？').then(_ => {
@@ -236,7 +255,7 @@ export default {
             url: this.flowableUrl
           }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
           ).then(res => {
-            location.reload()
+            this.getAllRequire()
           }).catch((res) => {
           })
         })
@@ -258,7 +277,7 @@ export default {
       window.open(url)
     },
     execute(url) {
-      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}`).then((response) => {
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url}&username=${this.$store.getters.userinfo.name}`).then((response) => {
         this.$message({
           message: '执行成功',
           type: 'success'
@@ -267,19 +286,28 @@ export default {
         this.$message.error('执行失败')
       })
     },
-    newServiceScheme() {
-      console.log(`${baseUrl.matchUrl}/api/addmodel`)
-      this.$ajax.get(`${baseUrl.matchUrl}/api/addmodel`).then(res => {
-        if (res.data.msg === 'success') {
-          window.open(res.data.url)
-        } else {
-          this.$message.error('服务方案新建失败')
-        }
+    showMatchRp(scope) {
+      const requireId = scope.row.goal.requireId
+      scope.row.showRpResult = true
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
+        const map = rpRequireMap(response.data)
+        ergodicGoals(this.data, (item) => {
+          if (typeof map[item.goal.goalId] !== 'undefined') {
+            this.$set(item, 'showRpResult', true)
+            this.$set(item, 'rpInfo', map[item.goal.goalId])
+          }
+        })
       }).catch(_ => {
-        this.$message.error('服务方案新建失败')
+        this.$message.error('出现错误')
       })
     },
-    handleTime: handleTime
+    hiddenMatchRp(scope) {
+      ergodicGoals([scope.row], (item) => {
+        item.showRpResult = false
+      })
+    },
+    handleTime,
+    calcColor
   }
 }
 </script>

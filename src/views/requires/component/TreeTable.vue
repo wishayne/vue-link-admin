@@ -54,11 +54,11 @@
         </el-table-column>
         <el-table-column align="center" label="约束值">
           <template slot-scope="{row}">
-            <tempalte v-if="row.valueType==='region'">
+            <template v-if="row.valueType==='region'">
               min:<el-input v-model="row.minValue" :placeholder="''+row.minValue" size="mini" />
               max:<el-input v-model="row.maxValue" :placeholder="''+row.maxValue" size="mini" />
               unit:<el-input v-model="row.unit" :placeholder="row.unit" size="mini" />
-            </tempalte>
+            </template>
             <template v-else-if="row.valueType==='after'">
               <el-select
                 v-model="selectedTimeResGoal"
@@ -105,7 +105,7 @@
 <script>
 let restrictNum = 0
 export default {
-  name: 'AddRequire',
+  name: 'TreeTable',
   props: [
     'data',
     'isTree'
@@ -188,7 +188,7 @@ export default {
       if (children.length > 0) {
         children.map((x, i) => {
           // 设置 __level 标志位 用于展示区分层级
-          this.$set(x, '__level', TreeTable)
+          this.$set(x, '__level', index)
           // 设置 __family 为家族关系 为所有父级，包含本身在内
           this.$set(x, '__family', [...family])
           // 本身的唯一标识  可以理解为个人的身份证咯 一定唯一。
@@ -196,7 +196,7 @@ export default {
           parent.push(x)
           // 如果仍有子集，则进行递归
           if (x.children.length > 0) {
-            this.formatConversion(parent, x.children, TreeTable + 1, [...family, elderIdentity + '_' + i], elderIdentity + '_' + i)
+            this.formatConversion(parent, x.children, index + 1, [...family, elderIdentity + '_' + i], elderIdentity + '_' + i)
           }
         })
       }
@@ -218,7 +218,7 @@ export default {
         // 删除操作
         const children = this.getBrotherById(node.__family)
         const index = children.findIndex(d => d.__identity === node.__identity)
-        children.splice(TreeTable, 1)
+        children.splice(index, 1)
       }
     },
     getBrotherById(ids) {
@@ -252,9 +252,8 @@ export default {
       })
     },
     deleteRestrict(row) {
-      console.log(row)
       const index = this.goalRestricts.findIndex(d => d.id === row.id)
-      this.goalRestricts.splice(TreeTable, 1)
+      this.goalRestricts.splice(index, 1)
     },
     showDialog(scope) {
       const node = scope.row
