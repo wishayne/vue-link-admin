@@ -7,6 +7,11 @@
     <br>
     <div style="margin:auto;width: 30%">
       <el-input v-model="detail" placeholder="请输入需要搜索的内容">
+        <el-select slot="prepend" v-model="select" placeholder="请选择">
+          <el-option label="餐厅名" value="1" />
+          <el-option label="订单号" value="2" />
+          <el-option label="用户电话" value="3" />
+        </el-select>
         <el-button slot="append" icon="el-icon-search" @click="search" />
       </el-input>
     </div>
@@ -266,6 +271,12 @@ export default {
       })
     },
     search() {
+      if (this.detail === '') {
+        this.$message({
+          message: '搜索内容不可以为空',
+          type: 'warning'
+        })
+      }
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}`)
         .then(response => {
           this.data = response.data
@@ -280,7 +291,7 @@ export default {
     execute(url) {
       this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&username=${this.$store.getters.userinfo.name}`).then((response) => {
         this.$message({
-          message: '执行成功',
+          message: '开始执行',
           type: 'success'
         })
       }).catch((respose) => {

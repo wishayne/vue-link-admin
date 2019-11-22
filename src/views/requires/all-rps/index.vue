@@ -18,7 +18,7 @@
       highlight-current-row
       @row-click="rowClick"
     >
-      <el-table-column prop="info.name" label="名字" align="center" />
+      <el-table-column prop="info.name" label="名称" align="center" />
       <el-table-column prop="info.description" label="描述" align="center" />
       <el-table-column prop="info.domain" label="业务领域" align="center" />
       <el-table-column prop="info.timestamp" label="创建时间" align="center">
@@ -176,6 +176,12 @@ export default {
       //    TODO 修改
     },
     search() {
+      if (this.detail === '') {
+        this.$message({
+          message: '搜索内容不可以为空',
+          type: 'warning'
+        })
+      }
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-rp?detail=${this.detail}`).then(response => {
         this.data = response.data
         this.selectedRP = { info: {}}
