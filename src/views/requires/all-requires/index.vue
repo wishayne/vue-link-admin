@@ -68,7 +68,7 @@
           <span v-if="scope.row.requireInfo.state === 0">
             <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配需求模式</el-button>
             <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
-              <el-button type="text">修改</el-button>
+              <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
             </el-tooltip>
           </span>
           <span v-else-if="scope.row.requireInfo.state === 1">
@@ -97,7 +97,11 @@
       </el-row>
 
     </div>
-
+    <el-dialog :visible.sync="updateRequire.visible" :fullscreen="true">
+      <div v-if="updateRequire.visible" style="text-align: center;">
+        <tree-table :data="updateRequire.new" :is-tree="true" @submit="update" />
+      </div>
+    </el-dialog>
     <el-dialog
       :visible.sync="visible"
       :fullscreen="true"
@@ -114,9 +118,13 @@ import { getAdminState, getRestrictString, getUserState } from './restrict-optio
 import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
 import qs from 'qs'
 import require from '@/utils/request2'
+import TreeTable from '../component/TreeTable'
+import jiff from 'jiff'
+
 const mergeCol = new Set(['提出时间', '需求处理状态', '用户关注状态', '操作'])
 export default {
   name: 'AllRequires',
+  components: { TreeTable },
   data() {
     return {
       data: [],
@@ -127,7 +135,8 @@ export default {
       flowableUrl: '',
       delsubData: { file: '', url: '' },
       selectRequire: { requireId: -1, id: -1 },
-      loading: false
+      loading: false,
+      updateRequire: { visible: false, old: [], new: [] }
     }
   },
   computed: {
@@ -291,6 +300,7 @@ export default {
           message: '搜索内容不可以为空',
           type: 'warning'
         })
+        return
       }
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}&option=${this.searchOption}`)
         .then(response => {
@@ -331,6 +341,27 @@ export default {
       ergodicGoals([scope.row], (item) => {
         item.showRpResult = false
       })
+    },
+    update(t) {
+      const a = jiff.diff(this.updateRequire.old[0], this.updateRequire.new[0])
+      this.updateRequire.new.forEach(item => {
+        delete item.requireInfo
+        delete item.id
+        delete item.state
+      })
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-require?requireId=${this.selectRequire.requireId}`,
+        this.updateRequire.new).then(_ => {
+        this.updateRequire.visible = false
+        this.getAllRequire()
+      })
+    },
+    modifyRequire(require) {
+      const requireId = require.requireInfo.requireId
+      // console.log(requireId)
+      this.updateRequire.old = [require]
+      this.updateRequire.new = JSON.parse(JSON.stringify([require]))
+      this.updateRequire.visible = true
+      this.selectRequire.requireId = require.requireInfo.requireId
     },
     handleTime,
     calcColor,

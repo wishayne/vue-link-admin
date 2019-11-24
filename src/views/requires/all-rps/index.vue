@@ -26,13 +26,18 @@
           {{ handleTime(scope.row.info.timestamp) }}
         </template>
       </el-table-column>
+      <el-table-column align="center" width="100" label="操作">
+        <template slot-scope="scope">
+          <el-button type="text" @click="modifyRpDialog(scope)">修改</el-button>
+        </template>
+      </el-table-column>
     </el-table>
     <br>
     <h2 style="text-align: center">
       {{ selectedRP.info.name || '' }}
     </h2>
     <br>
-    <el-table :data="tableListData" :row-style="toggleDisplayTr" :span-method="toggleMergeRow" border stripe class="init_table" size="small">
+    <el-table :data="tableListData" :row-style="toggleDisplayTr" border stripe class="init_table" size="small">
       <!--            目标树-->
       <el-table-column label="目标" min-width="150" show-overflow-tooltip align="left">
         <template slot-scope="scope">
@@ -50,14 +55,6 @@
           </el-tag>
         </template>
       </el-table-column>
-      <!--            操作-->
-      <el-table-column align="center" width="100" label="操作">
-        <template slot-scope="scope">
-          <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
-            <el-button type="text" @click="modifyRP(scope)">修改</el-button>
-          </el-tooltip>
-        </template>
-      </el-table-column>
     </el-table>
 
     <br>
@@ -68,6 +65,26 @@
       class="add-rp"
       @click="$router.push({path:'/requires/add-rp/index'})"
     />
+
+    <el-dialog :visible.sync="showDialog" :fullscreen="true">
+      <div v-if="showDialog" style="text-align: center;">
+        <el-card class="box-card">
+          <el-form ref="form" label-width="80px">
+            <el-form-item label="名称:">
+              <el-input v-model="info.name" placeholder="请输入" size="small" />
+            </el-form-item>
+            <el-form-item label="功能描述:">
+              <el-input v-model="info.description" placeholder="请输入" size="small" />
+            </el-form-item>
+            <el-form-item label="业务领域:">
+              <el-input v-model="info.domain" placeholder="请输入" size="small" />
+            </el-form-item>
+          </el-form>
+        </el-card>
+        <br>
+        <tree-table :data="requirePattern" :is-tree="false" @submit="modifyRp" />
+      </div>
+    </el-dialog>
   </div>
 
 </template>
@@ -75,9 +92,11 @@
 <script>
 import { handleTime } from '../all-requires/util'
 import { getRestrictString } from '../all-requires/restrict-options'
+import TreeTable from '../component/TreeTable'
 
 export default {
   name: 'AllRP',
+  components: { TreeTable },
   data() {
     return {
       data: [],
@@ -85,7 +104,22 @@ export default {
         info: {}
       },
       detail: '',
-      foldList: []
+      foldList: [],
+      info: {
+        name: '',
+        description: '',
+        domain: ''
+      },
+      requirePattern: [{
+        id: 0,
+        goal: {
+          content: 'goal',
+          restricts: []
+        },
+        children: []
+      }],
+      selectRpId: -1,
+      showDialog: false
     }
   },
   computed: {
@@ -94,15 +128,18 @@ export default {
     }
   },
   mounted() {
-    this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-rps`).then(response => {
-      this.data = response.data
-    })
+    this.getAllRPs()
   },
   methods: {
     rowClick(row) {
       this.selectedRP = row
     },
     getRestrictString,
+    getAllRPs() {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-rps`).then(response => {
+        this.data = response.data
+      })
+    },
     toggleFoldingStatus(params) {
       this.foldList.includes(params.__identity) ? this.foldList.splice(this.foldList.indexOf(params.__identity), 1) : this.foldList.push(params.__identity)
     },
@@ -116,32 +153,6 @@ export default {
     },
     toggleFoldingClass(params) {
       return params.children.length === 0 ? 'permission_placeholder' : (this.foldList.indexOf(params.__identity) === -1 ? 'el-icon-minus' : 'el-icon-plus')
-    },
-    toggleMergeRow({ row, column, rowIndex, columnIndex }) {
-      const tableCol = document.getElementsByClassName('init_table')[0].childElementCount
-      const foldList = this.foldList
-      function childrenNum(goal) {
-        let num = 1
-        if (foldList.includes(goal.__identity)) {
-          return num
-        }
-        for (let i = 0; i < goal.children.length; i++) {
-          num += childrenNum(goal.children[i])
-        }
-        return num
-      }
-
-      if (columnIndex <= tableCol && columnIndex > tableCol - 1) {
-        if (row.__level === 0) {
-          const num = childrenNum(row)
-          return {
-            rowspan: num,
-            colspan: 1
-          }
-        } else {
-          return [0, 0]
-        }
-      }
     },
     formatConversion(parent, children, index = 0, family = [], elderIdentity = 'x') {
       // children如果长度等于0，则代表已经到了最低层
@@ -163,9 +174,14 @@ export default {
       }
       return parent
     },
-    modifyRP(scope) {
-      console.log(scope)
-      //    TODO 修改
+    modifyRpDialog(scope) {
+      const rpId = scope.row.info.rpId
+      this.selectRPId = rpId
+      this.requirePattern = scope.row.data
+      this.info.name = scope.row.info.name
+      this.info.description = scope.row.info.description
+      this.info.domain = scope.row.info.domain
+      this.showDialog = true
     },
     search() {
       if (this.detail === '') {
@@ -173,10 +189,20 @@ export default {
           message: '搜索内容不可以为空',
           type: 'warning'
         })
+        return
       }
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-rp?detail=${this.detail}`).then(response => {
         this.data = response.data
         this.selectedRP = { info: {}}
+      })
+    },
+    modifyRp() {
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-rp?rpId=${this.selectRPId}`, {
+        info: this.info,
+        data: this.requirePattern }
+      ).then(_ => {
+        this.showDialog = false
+        this.getAllRPs()
       })
     },
     handleTime: handleTime
