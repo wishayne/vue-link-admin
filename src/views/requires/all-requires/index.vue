@@ -40,9 +40,9 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
-          <span v-for="restrict in scope.row.goal.restricts" :key="restrict.key">
+          <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
-          </span>
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="提出时间">
@@ -104,7 +104,7 @@
 
 <script>
 import baseUrl from './api'
-import { requireState } from './restrict-options'
+import { requireState, getRestrictString } from './restrict-options'
 import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
 import qs from 'qs'
 export default {
@@ -133,17 +133,7 @@ export default {
     this.getAllRequire()
   },
   methods: {
-    getRestrictString(r) {
-      if (r.valueType === 'region') {
-        return ` ${r.key}:${r.minValue}~${r.maxValue}${r.unit}`
-      }
-      if (r.valueType === 'after') {
-        return ` 在${r.value}之后进行`
-      }
-      if (r.valueType !== '') {
-        return ` ${r.key}:${r.value}`
-      }
-    },
+    getRestrictString,
     toggleFoldingStatus(params) {
       this.foldList.includes(params.__identity) ? this.foldList.splice(this.foldList.indexOf(params.__identity), 1) : this.foldList.push(params.__identity)
     },

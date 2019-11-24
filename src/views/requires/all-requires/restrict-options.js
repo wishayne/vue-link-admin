@@ -29,5 +29,17 @@ const requireState = {
   3: '已生成服务方案'
 }
 
-export { initParam, requireState }
+const getRestrictString = function(r) {
+  if (r.valueType === 'region') {
+    return ` ${r.key}:${r.minValue}~${r.maxValue}${r.unit}`
+  }
+  if (r.valueType === 'after') {
+    return ` 在${r.value}之后进行`
+  }
+  if (r.valueType !== '') {
+    return ` ${r.key}:${r.value}`
+  }
+}
+
+export { initParam, requireState, getRestrictString }
 
