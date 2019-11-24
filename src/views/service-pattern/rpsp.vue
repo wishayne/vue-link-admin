@@ -982,17 +982,24 @@
                                                   })
                                               }
                                           }
-                                          console.log(rpIdNameList)
+                                          console.log(rpIdNameList);
+                                          let spField = '';
+                                          if (params.row.rpName !== undefined && params.row.rpName !== ''){
+                                              spField = 'test';
+                                          }
+                                          if (this.contextData1.length !== 0){
+                                              spField = 'test';
+                                          }
                                           this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
                                               spId:'',
                                               spName:params.row.spName,
                                               spFunc:'',
-                                              spField:''
+                                              spField:spField
                                           }).then(res => {
                                               this.searchAllData = [];
                                               var datamap = [];
                                               for (var i=0; i<rpIdNameList.length; i++){
-                                                  datamap.push([])
+                                                  datamap.push([]);
                                                   for (var j=0; j<res.data.length; j++){
                                                       datamap[i].push({
                                                           "rpId":rpIdNameList[i].rpId,
@@ -1005,7 +1012,7 @@
                                               var that = this;
                                               var promiseAll = datamap.map(function(i){
                                                   var x = i.map(function(j){
-                                                      return that.$ajax.post("http://localhost:8088/findtimesandp",{
+                                                      return that.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findtimesandp",{
                                                           rpId:j.rpId,
                                                           spId:j.spId,
                                                           context:that.searchcontext
