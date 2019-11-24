@@ -166,7 +166,7 @@
                             on: {
                                 click: () => {
                                     if (params.row.spProcess === null || params.row.spProcess === ""){
-                                        this.$ajax('http://localhost:8089/add_new_process_by_model_id?id=' + params.row.spId + "&name=" + params.row.spName + "&model_id=" + this.process_id)
+                                        this.$ajax('http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/add_new_process_by_model_id?id=' + params.row.spId + "&name=" + params.row.spName + "&model_id=" + this.process_id)
                                             .then(res => {
                                                 if (res.data === 'success') {
                                                     window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spId)
@@ -206,7 +206,7 @@
                             on: {
                                 'on-ok': () => {
                                     console.log(params.row)
-                                    this.$ajax.get('http://localhost:8089/del_model?id=' + params.row.spId);
+                                    this.$ajax.get('http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/del_model?id=' + params.row.spId);
                                     this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delsp",{
                                         spId:params.row.spId,
                                         spName:params.row.spName,
@@ -475,7 +475,7 @@
                                     this.process_id = params.row.spId;
                                     this.process_func = params.row.spFunc;
                                     this.process_field = params.row.spField;
-                                    this.$ajax.post("http://localhost:8088/findprocessbyall",{
+                                    this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findprocessbyall",{
                                         spId:this.process_id,
                                         spName:"",
                                         spFunc:this.process_func,
