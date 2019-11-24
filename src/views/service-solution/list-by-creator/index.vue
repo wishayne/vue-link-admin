@@ -84,7 +84,7 @@ export default {
     // this.$http.get('/process/sessions')
     //   .then(response => response.data)
       .then(data => {
-        this.tableData = Object.values(data)
+        this.tableData = data
       })
   },
   methods: {

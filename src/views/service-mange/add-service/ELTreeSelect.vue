@@ -98,7 +98,7 @@ export default {
     },
     checkStrictly: {
       type: Boolean,
-      default: true
+      default: false
     },
     accordion: {
       type: Boolean,

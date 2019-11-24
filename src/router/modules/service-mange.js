@@ -29,7 +29,7 @@ const serviceManageRouter = {
       component: () => import('@/views/service-mange/list-service/'),
       name: 'list-service',
       meta: {
-        title: '搜索服务', noCache: true
+        title: '服务检索', noCache: true
       }
     },
     {
@@ -46,7 +46,7 @@ const serviceManageRouter = {
       component: () => import('@/views/service-mange/service-category/'),
       name: 'service-category',
       meta: {
-        title: '服务目录管理', noCache: true
+        title: '服务领域管理', noCache: true
       }
     },
     {

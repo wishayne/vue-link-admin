@@ -81,7 +81,7 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     const unboxer = new UnBoxer(['categories', 'parent',
-      'children', 'provider', 'deployment', 'roles', 'apis', 'hasInput', 'hasOutput'])
+      'children', 'provider', 'deployment', 'roles', 'apis', 'hasInput', 'hasOutput', 'creator', 'category'])
     if (typeof (res) !== 'string') {
       return unboxer.unbox(res)
     }

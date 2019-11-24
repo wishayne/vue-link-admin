@@ -6,8 +6,9 @@
         <el-form-item label="服务名称">
           <el-input v-model="addForm.serviceName" autosize prop="serviceName" />
         </el-form-item>
-        <el-form-item label="服务类别">
+        <el-form-item label="所属领域">
           <el-tree-select
+            ref="tree"
             v-model="addForm.categories"
             :data="treeData"
             node-key="id"
@@ -39,6 +40,35 @@
         <el-form-item label="版本">
           <el-input v-model="addForm.version" autosize />
         </el-form-item>
+        <el-form-item label="部署方式">
+          <el-radio-group v-model="addForm.deployment.deploymentType">
+            <el-radio :label="'GIT_S2I'">GIT</el-radio>
+            <el-radio :label="'DOCKER'">Docker</el-radio>
+            <el-radio :label="'EXTERNAL'">外部服务</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="addForm.deployment.deploymentType=='GIT_S2I'" label="GIT地址">
+          <el-input v-model="addForm.deployment.gitUrl" autosize />
+        </el-form-item>
+        <el-form-item v-if="addForm.deployment.deploymentType=='GIT_S2I'" label="源代码分支">
+          <el-input v-model="addForm.deployment.gitBranch" autosize />
+        </el-form-item>
+        <el-form-item v-if="addForm.deployment.deploymentType=='GIT_S2I'" label="S2I镜像">
+          <el-input v-model="addForm.deployment.s2iImage" autosize />
+        </el-form-item>
+        <el-form-item v-if="addForm.deployment.deploymentType=='GIT_S2I'" label="S2I版本">
+          <el-input v-model="addForm.deployment.s2iVersion" autosize />
+        </el-form-item>
+        <el-form-item v-if="addForm.deployment.deploymentType=='DOCKER'" label="Docker镜像">
+          <el-input v-model="addForm.deployment.dockerImage" autosize />
+        </el-form-item>
+        <el-form-item label="接口类型">
+          <el-radio-group v-model="addForm.deployment.protocol">
+            <el-radio :label="protocols[0]" :disabled="true">SOAP/WSDL</el-radio>
+            <el-radio :label="protocols[1]" :disabled="true">JSON/WADL</el-radio>
+            <el-radio :label="protocols[2]">自定义</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-upload
           ref="upload"
           action="#"
@@ -46,8 +76,7 @@
           :multiple="false"
           :auto-upload="false"
         >
-          <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-          <div slot="tip" class="el-upload__tip">选取接口定义文件</div>
+          <el-button slot="trigger" size="small" type="primary">选取接口定义文件</el-button>
         </el-upload>
         <el-form-item>
           <el-button type="primary" @click="onAdd">添加</el-button>
@@ -60,6 +89,8 @@
 <script>
 import ElTreeSelect from './ELTreeSelect'
 import request from '@/utils/request2'
+
+const protocols = ['SOAP', 'JSON', 'default']
 
 export default {
   components: {
@@ -95,6 +126,7 @@ export default {
         'removed': false,
         'id': 1
       }],
+      categories: new Map(),
       treeProps: {
         children: 'children',
         label: 'catelogyName'
@@ -117,6 +149,7 @@ export default {
           'id': 2
         }
       ],
+      protocols: protocols,
       addForm: {
         serviceName: '',
         categories: [],
@@ -126,7 +159,15 @@ export default {
         serviceType: 'API',
         textDescription: '',
         version: '',
-        deployment: null,
+        deployment: {
+          protocol: protocols[2],
+          deploymentType: 'GIT_S2I',
+          gitUrl: '',
+          gitBranch: '',
+          s2iImage: '',
+          s2iVersion: '',
+          dockerImage: ''
+        },
         roles: [],
         apis: []
       },
@@ -160,6 +201,17 @@ export default {
         method: 'get'
       }).then(data => {
         this.treeData = data
+        const that = this
+        function walk(list) {
+          for (let i = 0; i < list.length; i++) {
+            that.categories.set(list[i].catelogyId, list[i])
+            if (list[i].children != null && list[i].children.length > 0) {
+              walk(list[i].children)
+            }
+          }
+        }
+
+        walk(this.treeData)
       })
     },
     handleFileChange(file, fileList) {
@@ -168,21 +220,55 @@ export default {
       reader.onloadend = () => {
         // console.info(reader.result)
         const config = JSON.parse(reader.result)
-        this.addForm.deployment = config.deployment
+        // this.addForm.deployment = config.deployment
         this.addForm.roles = config.roles
         this.addForm.apis = config.apis
       }
       reader.readAsText(file.raw)
     },
     onAdd() {
+      function parents(node) {
+        if (node == null || node.parent == null) {
+          return []
+        }
+        return [node.parent, ...parents(node.parent)]
+      }
       this.$refs['addForm'].validate((valid) => {
         if (valid) {
           console.info(this.addForm)
-          this.addForm.categories = this.addForm.categories.map(i => {
-            return {
-              id: i
+          const categoryMap = new Map()
+          this.addForm.categories.forEach(i => {
+            categoryMap.set(i, {
+              id: {
+                categoryId: i
+              },
+              category: {
+                id: i
+              },
+              fullLink: true
+            })
+          })
+          const halfSet = new Set()
+          this.addForm.categories.forEach(i => {
+            parents(this.categories.get(i)).forEach(node => halfSet.add(node.id))
+          })
+          halfSet.forEach(i => {
+            if (!categoryMap.has(i)) {
+              categoryMap.set(i, {
+                id: {
+                  categoryId: i
+                },
+                category: {
+                  id: i
+                },
+                fullLink: false
+              })
             }
           })
+
+          this.addForm.categoryMappings = [...categoryMap.values()]
+          delete this.addForm.categories
+          console.info(this.addForm)
 
           if (typeof (this.addForm.provider) === 'number') {
             this.addForm.provider = {

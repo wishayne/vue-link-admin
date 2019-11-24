@@ -19,7 +19,7 @@
       height="450"
       border
     >
-      <el-table-column label="" width="50">
+      <el-table-column width="50">
         <template slot-scope="scope">
           <span>{{ scope.$index+ 1 }}</span>
         </template>
@@ -33,6 +33,22 @@
       <el-table-column label="相关角色" width="90">
         <template slot-scope="scope">
           <span>{{ scope.row.roles.map(role=>role.id.name).join(',') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="输入列表" width="90">
+        <template slot-scope="scope">
+          <el-tag
+            v-for="(input,index) in scope.row.hasInput"
+            :key="index"
+            size="mini"
+          >
+            {{ input.parameterName }}:{{ input.xsdType }}:{{ input.comment }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="输出类型" width="90">
+        <template slot-scope="scope">
+          <span>{{ scope.row.hasOutput==null?'':scope.row.hasOutput.xsdType }}-{{ scope.row.hasOutput==null?'':scope.row.hasOutput.comment }}</span>
         </template>
       </el-table-column>
     </el-table>

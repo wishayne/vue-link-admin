@@ -19,15 +19,15 @@
     <el-col :span="18">
       <el-container>
         <el-header>
-          <el-button @click="add">添加同级类别</el-button>
-          <el-button @click="addChild">添加子类别</el-button>
-          <el-button @click="update">修改选中的类别</el-button>
-          <el-button @click="removeData">删除选中的类别</el-button>
+          <el-button @click="add">添加同级领域</el-button>
+          <el-button @click="addChild">添加子领域</el-button>
+          <el-button @click="update">修改选中的领域</el-button>
+          <el-button @click="removeData">删除选中的领域</el-button>
         </el-header>
         <el-main>
           <div v-if="!whenAdd && !whenUpdate">
             <el-form :model="viewForm" label-width="80px">
-              <el-form-item label="类别名称">
+              <el-form-item label="领域名称">
                 {{ viewForm.catelogyName }}
               </el-form-item>
               <el-form-item label="详细描述">
@@ -37,7 +37,7 @@
           </div>
           <div v-if="whenAdd">
             <el-form ref="addForm" :model="addForm" :rules="rules" label-width="80px">
-              <el-form-item label="类别名称">
+              <el-form-item label="领域名称">
                 <el-input v-model="addForm.catelogyName" />
               </el-form-item>
               <el-form-item label="详细描述">
@@ -51,7 +51,7 @@
           </div>
           <div v-if="whenUpdate">
             <el-form ref="updateForm" :model="updateForm" :rules="rules" label-width="80px">
-              <el-form-item label="类别名称">
+              <el-form-item label="领域名称">
                 <el-input v-model="updateForm.catelogyName" />
               </el-form-item>
               <el-form-item label="详细描述">

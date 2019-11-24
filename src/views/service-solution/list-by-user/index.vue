@@ -1,54 +1,88 @@
 <template>
-  <div>
-    <p>当前登陆的用户：{{ this.$store.getters.userinfo.name }}</p>
-    <p>用户拥有的角色：{{ roles }}</p>
-    <div v-for="(status,id2) in taskList" :key="id2" class="app-container">
-      <div style="margin-top:20px;margin-bottom: 20px">
-        <el-row :gutter="10">
-          <el-col :span="4">
-            所属服务：<b>{{ status.serviceInfo.serviceName }}&nbsp;{{ status.serviceInfo.textDescription }}</b>
-          </el-col>
-          <el-col :span="4">
-            服务类别：<b>{{ status.serviceInfo.categories.map(c=>c.catelogyName).join(',') }}</b>
-          </el-col>
-          <el-col :span="4">
-            服务当前结果：<b>{{ status.currentValue }}</b>
-          </el-col>
-        </el-row>
-      </div>
+  <el-container>
+    <el-header>
+      <p>当前登陆的用户：{{ this.$store.getters.userinfo.name }}</p>
+      <p>用户拥有的角色：{{ roles.join(',') }}</p>
+    </el-header>
+    <el-main>
       <el-row>
-        <el-col :span="12">
-          <el-table
-            :data="filterApi(status.serviceInfo.apis)"
-            style="width: 100%;"
-            height="450"
-            border
+        <el-table
+          :data="taskList"
+          style="width: 100%;"
+          height="450"
+          highlight-current-row
+          border
+          @current-change="handleCurrentChange"
+        >
+          <el-table-column type="index" width="50" />
+          <el-table-column
+            label="服务名称"
+            width="120"
           >
-            <el-table-column label="" width="50">
-              <template slot-scope="scope">
-                <span>{{ scope.$index+ 1 }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="description" label="接口描述" width="120" />
-            <el-table-column label="相关角色" width="90">
-              <template slot-scope="scope">
-                <span>{{ scope.row.roles.map(role=>role.id.name).join(',') }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="90">
-              <template slot-scope="scope">
-                <button v-if="scope.row.apiType=='FINISH'" @click="finishAPI(scope.row,status.sessionId,status.serviceInfo.serviceId)">结束服务</button>
-                <button v-if="scope.row.apiType=='VIEW'" @click="viewAPI(scope.row,status.sessionId)">执行该服务</button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-col>
-        <el-col :span="12">
-          <iframe v-if="whenView" :src="sub_url" width="400px" height="500px" />
-        </el-col>
+            <template slot-scope="scope">
+              <span>{{ scope.row.serviceInfo.serviceName }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="服务描述"
+            width="120"
+          >
+            <template slot-scope="scope">
+              <span>{{ scope.row.serviceInfo.textDescription }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="服务领域"
+            width="120"
+          >
+            <template slot-scope="scope">
+              <el-tag
+                v-for="(catelogy,index) in scope.row.serviceInfo.categoryMappings"
+                :key="index"
+                :type="catelogy.fullLink?'success':'info'"
+                size="mini"
+              >
+                {{ catelogy.category.catelogyName }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="服务当前结果"
+            width="120"
+          >
+            <template slot-scope="scope">
+              <span>{{ scope.row.currentValue }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-row>
-    </div>
-  </div>
+      <el-row v-if="status!=null && status.serviceInfo!=null && status.serviceInfo.apis!=null">
+        <el-table
+          :data="filterApi(status.serviceInfo.apis)"
+          style="width: 100%;"
+          height="450"
+          border
+        >
+          <el-table-column type="index" width="50" />
+          <el-table-column prop="description" label="接口描述" width="120" />
+          <el-table-column label="相关角色" width="90">
+            <template slot-scope="scope">
+              <span>{{ scope.row.roles.map(role=>role.id.name).join(',') }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="90">
+            <template slot-scope="scope">
+              <button v-if="scope.row.apiType=='FINISH'" @click="finishAPI(scope.row,status.sessionId,status.serviceInfo.serviceId)">结束服务</button>
+              <button v-if="scope.row.apiType=='VIEW'" @click="viewAPI(scope.row,status.sessionId)">执行该服务</button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-row>
+      <el-row>
+        <iframe v-if="whenView" :src="sub_url" width="400px" height="500px" />
+      </el-row>
+    </el-main>
+  </el-container>
 </template>
 <script>
 import request from '@/utils/request2'
@@ -61,7 +95,7 @@ export default {
       tableData: [],
       roles: [],
       taskList: [],
-      currentRow: null,
+      status: {},
       responseData: {},
       sub_url: '',
       whenView: false,
@@ -76,7 +110,7 @@ export default {
       method: 'get'
     })
       .then(data => {
-        this.tableData = Object.values(data)
+        this.tableData = data
       }).then(() => {
         return request({
           url: '/group/list',
@@ -138,7 +172,7 @@ export default {
       this.whenView = true
     },
     handleCurrentChange(val) {
-      this.currentRow = this.tableData.indexOf(val)
+      this.status = val
     },
     continueExecute(session) {
       this.$http.get('/task/list')

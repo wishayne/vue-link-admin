@@ -12,7 +12,7 @@
         :props="defaultProps"
         :expand-on-click-node="true"
         :check-on-click-node="true"
-        :check-strictly="true"
+        :check-strictly="false"
         @check-change="handleChange"
       />
     </el-col>
@@ -61,11 +61,19 @@
               width="120"
             />
             <el-table-column
-              label="服务类别"
-              width="120"
+              label="所属领域"
+              width="150"
             >
               <template slot-scope="scope">
-                <span style="margin-left: 10px">{{ getCatelogyName(scope.row) }}</span>
+                <el-tag
+                  v-for="(catelogy,index) in scope.row.categoryMappings"
+                  :key="index"
+                  :type="catelogy.fullLink?'success':'info'"
+                  size="mini"
+                >
+                  {{ catelogy.category.catelogyName }}
+                </el-tag>
+                <!--<span style="margin-left: 10px">{{ getCatelogyName(scope.row) }}</span>-->
               </template>
             </el-table-column>
             <el-table-column
@@ -183,7 +191,6 @@ export default {
         children: 'children',
         label: 'catelogyName'
       },
-      currentId: 0,
       tableKey: 0,
       list: null,
       total: 0,
@@ -215,7 +222,7 @@ export default {
   },
   created: function() {
     this.loadCategory()
-    this.getList()
+      .then(() => this.getList())
   },
   methods: {
     loadCategory() {
@@ -234,7 +241,22 @@ export default {
         query.page -= 1
         const choosed = this.$refs.tree.getCheckedNodes(false, false)
         if (choosed.length > 0) {
-          query.category = choosed[0].catelogyName
+          const paths = choosed.map(node => this.$refs.tree.getNodePath(node)).sort((a, b) => a.length - b.length)
+          const results = []
+          results.push(paths[0])
+          out_for:
+          for (let i = 1; i < paths.length; i++) {
+            for (let j = 0; j < results.length; j++) {
+              if (paths[i].length === results[j].length) {
+                continue
+              }
+              if (results[j].every((value, index) => value.id === paths[i][index].id)) {
+                continue out_for
+              }
+            }
+            results.push(paths[i])
+          }
+          query.category = results.map(value => value[value.length - 1].catelogyName).join(',')
         }
         const res = await request({
           url: '/service/query',
@@ -253,11 +275,11 @@ export default {
     },
     handleChange(node, checked) {
       // console.info(node,checked);
-      if (checked) {
-        this.$refs.tree.setCheckedKeys([node['@id']])
-        this.currentId = node.id
-        this.viewForm = this.$refs.tree.getCheckedNodes()[0]
-      }
+      // if (checked) {
+      //   this.$refs.tree.setCheckedKeys([node['@id']])
+      //   this.currentId = node.id
+      //   this.viewForm = this.$refs.tree.getCheckedNodes()[0]
+      // }
     },
     getCatelogyName(row) {
       return row.categories.map(category => category.catelogyName).join(',')

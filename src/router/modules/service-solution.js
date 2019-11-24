@@ -28,7 +28,7 @@ const serviceSolutionRouter = {
       component: () => import('@/views/service-solution/list-by-user'),
       name: 'list-by-user',
       meta: {
-        title: '进行中方案', noCache: true
+        title: '服务任务清单', noCache: true
       }
     },
     {
@@ -36,7 +36,7 @@ const serviceSolutionRouter = {
       component: () => import('@/views/service-solution/list-by-creator'),
       name: 'list-by-creator',
       meta: {
-        title: '已发起的方案', noCache: true
+        title: '执行中的方案', noCache: true
       }
     }
   ]
