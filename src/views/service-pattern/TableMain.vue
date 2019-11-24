@@ -23,7 +23,19 @@
             </div>
         </Card>
         <Alert>{{opensp}}</Alert>
-        <img :src="imgurl">
+
+        <Modal
+          v-model="modal1"
+          title="服务模式实例"
+          >
+          <Table
+            :columns="processColumn"
+            :data="sp_process"
+            stripe border
+            ref="table"
+          ></Table>
+          <Button @click="addprocess()">增加</Button>
+        </Modal>
 
       </Content>
       <iframe src="http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/" width="0" height="0"></iframe>
@@ -36,12 +48,190 @@
     name: "table-main",
     data() {
       return {
-          success:"chen1",
-          imgurl : "",
+        process_id: "",
+        process_func: "",
+        process_field: "",
+        modal1: false,
+        sp_process: [],
+        success:"chen1",
         //用来接收后台传输的数据
         opensp : "消息提示",
         pageSize : 5,
         tableData: [],
+        processColumn: [{
+                title: ' ',
+                key: 'spName',
+                render: (h, params) => {
+                    //@h 是一个构造器，可以使用其创建新组建
+                    //@params 是表格的数据，params.row可以获取当前行的数据
+                    if (params.row.$isEdit) {
+                        return h('div', [h('br'), "实例名称：", h("Input", {
+                            props: {
+                                value: params.row.spName
+                            },
+                            on: {
+                                input: function (event) {
+                                    params.row.spName = event;
+                                }
+                            }
+                          }), h('br')
+                        ])
+                    } else return h('div', {
+                        style:{
+                            fontSize: "120%"
+                        }
+                    }, [h('br'), h('p', "实例名称：" + params.row.spName), h('br')]);
+                }
+            }, {
+                title: ' ',
+                key: 'action',
+                render: (h, params) => {
+                    return h('div', [
+                        h('Button', {
+                            props: {
+                                type: params.row.$isEdit ? 'warning' : 'info',
+                                size: 'small',
+                                icon: ''
+                            },
+                            style: {
+                                marginRight: '5px',
+                            },
+                            on: {
+                                click: () => {
+                                    console.log(this.now);
+                                    if (params.row.$isEdit) {
+                                        if (params.row.new) {
+                                            params.row.new = false;
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/addsp",{
+                                                spId:params.row.spId,
+                                                spName:params.row.spName,
+                                                spFunc:this.process_func,
+                                                spField:this.process_field,
+                                                spProcess:"1",
+                                            }).catch(function (error) {
+                                                console.log(error);
+                                            });
+                                            this.$ajax.post("http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/update_model", {
+                                                id: params.row.spId,
+                                                name: params.row.spName
+                                            }).catch(function (error) {
+                                                console.log(error)
+                                            })
+                                        } else {
+                                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updatesp",{
+                                                spId:params.row.spId,
+                                                spName:params.row.spName,
+                                                spFunc:this.process_func,
+                                                spField:this.process_field,
+                                                spProcess:"1",
+                                                spIdOld:params.row.olddata.spId,
+                                                spNameOld:params.row.olddata.spName,
+                                                spFuncOld:this.process_func,
+                                                spFieldOld:this.process_field,
+                                            }).catch(function (error) {
+                                                console.log(error);
+                                            });
+                                            this.$ajax.post("http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/update_model", {
+                                                id: params.row.spId,
+                                                name: params.row.spName
+                                            }).catch(function (error) {
+                                                console.log(error)
+                                            })
+                                        }
+                                        this.handleSave(params.row);
+
+                                    } else {
+                                        params.row.olddata = {
+                                            spId:params.row.spId,
+                                            spName:params.row.spName,
+                                            spFunc:this.process_func,
+                                            spField:this.process_field,
+                                            spProcess:"1"
+                                        };
+                                        // 在这里打开导入服务
+                                        this.handleEdit(params.row);
+                                    }
+                                }
+                            }
+                        }, params.row.$isEdit ? '保存' : '修改'),
+                        params.row.$isEdit ? h('Button', {
+                            props: {
+                                type: params.row.$processEdit ? 'warning' : 'info',
+                                size: 'small',
+                                icon: ''
+                            },
+                            style: {
+                                marginRight: '5px',
+                            },
+                            on: {
+                                click: () => {
+                                    if (params.row.spProcess === null || params.row.spProcess === ""){
+                                        this.$ajax('http://localhost:8089/add_new_process_by_model_id?id=' + params.row.spId + "&name=" + params.row.spName + "&model_id=" + this.process_id)
+                                            .then(res => {
+                                                if (res.data === 'success') {
+                                                    window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spId)
+                                                } else {
+                                                }
+                                            });
+                                    } else {
+                                        window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spId)
+                                    }
+                                }
+                            }
+                        },  '修改流程') : h('Button', {
+                            props: {
+                                type: 'info',
+                                size: 'small',
+                                icon: ''
+                            },
+                            style: {
+                                marginRight: '5px',
+                            },
+                            on: {
+                                click: () => {
+                                    this.opensp = "执行中"
+                                    let url = 'http://sp-algorithm-linan.192.168.42.159.nip.io/api/runsp?inputfile=' + params.row.spId
+                                    this.$ajax.get(url).then(data =>{
+                                        this.opensp = data.data.msg
+                                    })
+                                }
+                            }
+                        }, '执行'),
+                        h('Poptip', {
+                            props: {
+                                confirm: true,
+                                title: '是否要删除此字段？',
+                                transfer: true
+                            },
+                            on: {
+                                'on-ok': () => {
+                                    console.log(params.row)
+                                    this.$ajax.get('http://localhost:8089/del_model?id=' + params.row.spId);
+                                    this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delsp",{
+                                        spId:params.row.spId,
+                                        spName:params.row.spName,
+                                        spFunc:this.process_func,
+                                        spField:this.process_field,
+                                    });
+                                    this.sp_process.splice(params.row._index, 1)
+                                    //删除逻辑
+                                }
+                            },
+                        }, [
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                            }, '删除')
+                        ])
+                    ])
+                }
+            }
+        ],
         sp: [{
             $isEdit:false,
             spId:"",
@@ -58,8 +248,6 @@
                 key: 'imgurl',
                 width: 400,
                 render: (h, params) => {
-                    console.log(this.spData)
-                    console.log(params.row)
                     return h("img", {
                         style: {
                             verticalAlign: 'middle',
@@ -76,7 +264,8 @@
                         }
                     })
                 }
-            },{
+            },
+            {
                 title: ' ',
                 key: 'spName',
                 render: (h, params) => {
@@ -118,48 +307,10 @@
                     }, [h('br'), h('p', "服务模式名称：" + params.row.spName), h('br'), h('p', "服务模式功能：" + params.row.spFunc), h('br'), h('p', "服务模式领域：" + params.row.spField), h('br')]);
                 }
             },
-            /* {
-                title: ' ',
-                key: 'spFunc',
-                render: (h, params) => {
-                    //@h 是一个构造器，可以使用其创建新组建
-                    //@params 是表格的数据，params.row可以获取当前行的数据
-                    if (params.row.$isEdit) {
-                        return h("Input", {
-                            props: {
-                                value: params.row.spFunc
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.spFunc = event;
-                                }
-                            }
-                        })
-                    } else return h('div', params.row.spFunc);
-                }
-            }, {
-                title: ' ',
-                key: 'spField',
-                render: (h, params) => {
-                    //@h 是一个构造器，可以使用其创建新组建
-                    //@params 是表格的数据，params.row可以获取当前行的数据
-                    if (params.row.$isEdit) {
-                        return h("Input", {
-                            props: {
-                                value: params.row.spField
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.spField = event;
-                                }
-                            }
-                        })
-                    } else return h('div', params.row.spField);
-                }
-            },*/ {
+            {
                 title: ' ',
                 key: 'action',
-                width: 200,
+                width: 300,
                 render: (h, params) => {
                     return h('div', [
                         h('Button', {
@@ -182,7 +333,7 @@
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
                                                 spField:params.row.spField,
-                                                spProcess:params.row.spProcess,
+                                                spProcess:"0",
                                             }).catch(function (error) {
                                                 console.log(error);
                                             });
@@ -198,7 +349,7 @@
                                                 spName:params.row.spName,
                                                 spFunc:params.row.spFunc,
                                                 spField:params.row.spField,
-                                                spProcess:params.row.spProcess,
+                                                spProcess:"0",
                                                 spIdOld:params.row.olddata.spId,
                                                 spNameOld:params.row.olddata.spName,
                                                 spFuncOld:params.row.olddata.spFunc,
@@ -221,7 +372,7 @@
                                             spName:params.row.spName,
                                             spFunc:params.row.spFunc,
                                             spField:params.row.spField,
-                                            spProcess:params.row.spProcess
+                                            spProcess:"0"
                                         }
                                         // 在这里打开导入服务
                                         this.handleEdit(params.row);
@@ -240,22 +391,6 @@
                             },
                             on: {
                                 click: () => {
-                                    /*if (params.row.$processEdit) {
-                                        this.opensp = "保存中，请稍后..."
-                                        this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/savesp?inputfile=' + params.row.spId)
-                                            .then(res => {
-                                                params.row.spProcess = params.row.spId
-                                                if (res.data.msg == 'success') {
-                                                    this.opensp = "保存成功！";
-                                                } else {
-                                                    this.opensp = res.data.msg
-                                                }
-                                            }).catch(function (error) {
-                                            console.log(error);
-                                        });
-                                        this.handleprocessSave(params.row);
-                                    }
-                                    else {*/
                                         this.opensp = "服务模式文件导入中，请稍后...";
                                         if (params.row.spProcess === null || params.row.spProcess === ""){
                                             this.$ajax('http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/add_new_model?id=' + params.row.spId + "&name=" + params.row.spName)
@@ -268,10 +403,9 @@
                                                     }
                                                 });
                                         } else {
-                                            this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess + " 修改文件。";
-                                            window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spProcess)
+                                            this.opensp = "导入服务模式文件成功! 访问 http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spId + " 修改文件。";
+                                            window.open("http://flowable-linan.192.168.42.159.nip.io/flowable-explorer/modeler.html?modelId=" + params.row.spId)
                                         }
-                                        /*this.handleprocessEdit(params.row);*/
                                     }
                             }
                         },  '修改流程') : h('Button', {
@@ -326,7 +460,57 @@
                                     marginRight: '5px'
                                 },
                             }, '删除')
-                        ])
+                        ]), h('Button', {
+                            props: {
+                                type: 'info',
+                                size: 'small',
+                                icon: ''
+                            },
+                            style: {
+                                marginRight: '5px',
+                            },
+                            on: {
+                                click: () => {
+                                    this.modal1 = true;
+                                    this.process_id = params.row.spId;
+                                    this.process_func = params.row.spFunc;
+                                    this.process_field = params.row.spField;
+                                    this.$ajax.post("http://localhost:8088/findprocessbyall",{
+                                        spId:this.process_id,
+                                        spName:"",
+                                        spFunc:this.process_func,
+                                        spField:this.process_field
+                                    }).then(res => {
+                                        var _spData = res.data;
+                                        var that = this;
+                                        var promiseAll = _spData.map(function(i){
+                                            return that.$ajax.get('http://activiti-linan.192.168.42.159.nip.io/activiti-activiti/find_model_extra?id=' + i.spId, {responseType: 'arraybuffer'})
+                                        });
+
+                                        that.sp_process = [];
+                                        that.$ajax.all(promiseAll).then(function(resArr){
+                                            resArr.forEach(function(res, i){
+                                                console.log(i)
+                                                that.sp_process.push({
+                                                    "imgurl" : 'data:image/png;base64,' + btoa(new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')),
+                                                    "spId" : _spData[i].spId,
+                                                    "spName" : _spData[i].spName,
+                                                    "spFunc" : _spData[i].spFunc,
+                                                    "spField" : _spData[i].spField
+                                                })
+                                            });
+                                            /*if (that.sp_process.length <= that.pageSize){
+                                                that.spData = that.sp_process
+                                            } else {
+                                                that.spData = that.sp_process.slice(0, that.pageSize);
+                                            }*/
+                                        })
+                                    }).catch(function (error) {
+                                        console.log(error);
+                                    });
+                                }
+                            }
+                        }, '查看实例')
                     ])
                 }
             }],
@@ -348,23 +532,6 @@
                               }
                           }
                       });
-                      /*if (params.row.$isEdit) {
-                          return h("Select", {
-                              props: {transfer:true},
-                              on: {
-                                  "on-change": (event) => {
-                                      params.row.spName = event
-                                  }
-                              }
-                          }, this.spNameList.map((item) => {
-                              return h('Option', {
-                                  props: {
-                                      value: item.value,
-                                      label: item.value
-                                  }
-                              })
-                          }))
-                      } else return h('div', params.row.spName);*/
                   }
               }, {
                   title: '功能信息',
@@ -439,8 +606,7 @@
                                                           "spId" : _spData[i].spId,
                                                           "spName" : _spData[i].spName,
                                                           "spFunc" : _spData[i].spFunc,
-                                                          "spField" : _spData[i].spField,
-                                                          "spProcess" : _spData[i].spProcess
+                                                          "spField" : _spData[i].spField
                                                       })
                                                   });
                                                   if (that.spAllData.length <= that.pageSize){
@@ -540,12 +706,29 @@
       handleSave(row) {
         this.$set(row, "$isEdit", false);
       },
-/*      handleprocessEdit(row) {
-          this.$set(row, "$processEdit", true);
+      addprocess() {
+          let x = this.sp_process.map(function (c) {
+              return c.spId
+          }).join(',');
+          let a = x.toString().split(',').sort();
+          let max = a.pop();
+          let b = max.substring(this.process_id.length, max.length);
+          if (b === ""){
+              b = -1
+          }
+          let processId = this.process_id + (parseInt(b) + 1).toString();
+          this.sp_process.push({
+              $isEdit:false,
+              $processEdit:false,
+              spId:processId,
+              spName:"新实例",
+              spFunc:this.process_func,
+              spField:this.process_field,
+              new:true,
+              spProcess:"",
+          });
+          console.log(this.sp_process)
       },
-      handleprocessSave(row) {
-          this.$set(row, "$processEdit", false);
-       },*/
       addRow(){
           var date = new Date();
           var year = date.getFullYear();
@@ -570,9 +753,6 @@
               sec = "0" + sec;
           }
           var currentdate = year + month + strDate + hour + min + sec
-          console.log(year + month + strDate)
-          console.log(currentdate)
-          console.log(strDate)
           this.spData.push({
               $isEdit:false,
               $processEdit:false,
@@ -580,11 +760,9 @@
               spName:"新服务模式",
               spFunc:"",
               spField:"",
-              context:"",
               new:true,
               spProcess:"",
           })
-
       },
         changePage (index) {
             // 这里直接更改了模拟的数据，真实使用场景应该从服务端获取数据
