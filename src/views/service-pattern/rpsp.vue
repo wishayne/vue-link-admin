@@ -24,6 +24,7 @@
           </div>
         </Card>
         <Modal
+          width="800"
           v-model="modal1"
           title="背景"
           @on-ok="ok"
@@ -39,6 +40,7 @@
           <!--<p>{{edit_context.context}}</p>-->
         </Modal>
         <Modal
+          width="800"
           v-model="modal2"
           title="背景"
           @on-ok="ok1"
@@ -88,8 +90,8 @@
     name: "table-main",
     data() {
       return {
-          pageSize: 5,
-          searchAllData: [],
+        pageSize: 5,
+        searchAllData: [],
         index: 0,
         model1: '',
         model1_id: "",
@@ -182,42 +184,106 @@
                       return h("div", params.row.key);
                   }
               }
-          },{
+          },
+            {
               title: 'value',
               key: 'value',
               render: (h, params) => {
-                  function edittype(type){
-                      if (type === "值") {
-                          return h('div', [h("Input", {
+                  function calc_len(value_list){
+                      let list = [];
+                      for (let i=0;i<value_list.length;i++){
+                          list.push([h("Input", {
                               props: {
-                                  value: params.row.value
+                                  value: value_list[i]
+                              },
+                              style: {
+                                  width: "80%"
                               },
                               on: {
                                   input: function (event) {
-                                      params.row.value = event;
+                                      value_list[i] = event;
+                                  }
+                              }
+                          }), h('Icon', { /*删除*/
+                              props: {
+                                  type: "md-remove",
+                                  size: "18"
+                              },
+                              on: {
+                                  click: () => {
+                                      params.row.value_list.splice(i, 1);
+                                      /*???*/
+                                      params.row.type = "1";
+                                      params.row.type = "枚举";
+                                  }
+                              }
+                          })]);
+                      }
+                      return list;
+                  }
+                  function edittype(type){
+                      if (type === "枚举") {
+                          if (params.row.value_list === undefined){
+                              params.row.value_list = [""];
+                          }
+                          return h('div', [h('div', calc_len(params.row.value_list)), h('Icon', {
+                              props: {
+                                  type: 'md-add',
+                                  size: "18"
+                              },
+                              on: {
+                                  click: () => {
+                                      params.row.value_list.push("");
+                                      /*???*/
+                                      params.row.type = "1";
+                                      params.row.type = "枚举";
                                   }
                               }
                           })])
+                      } else if (type === "范围") {
+                          return h('div', ["min", h("Input", {
+                              props: {
+                                  value: params.row.value_left
+                              },
+                              on: {
+                                  input: function (event) {
+                                      params.row.value_left = event;
+                                  }
+                              }
+                          }), "max", h("Input", {
+                              props: {
+                                  value: params.row.value_right
+                              },
+                              on: {
+                                  input: function (event) {
+                                      params.row.value_right = event;
+                                  }
+                              }
+                          })])
+                      } else if (type === "逻辑"){
+                          let list = [
+                              {
+                                  value: "是"
+                              },{
+                                  value: "否"
+                              }
+                          ];
+                          return h("Select", {
+                              props: {transfer:true},
+                              on: {
+                                  "on-change": (event) => {
+                                      params.row.value = event
+                                  }
+                              }
+                          }, list.map((item) => {
+                              return h('Option', {
+                                  props: {
+                                      value: item.value,
+                                      label: item.value
+                                  }
+                              })
+                          }))
                       }
-                      else return h('div', [h("Input", {
-                          props: {
-                              value: params.row.value_left
-                          },
-                          on: {
-                              input: function (event) {
-                                  params.row.value_left = event;
-                              }
-                          }
-                      }), h("Input", {
-                          props: {
-                              value: params.row.value_right
-                          },
-                          on: {
-                              input: function (event) {
-                                  params.row.value_right = event;
-                              }
-                          }
-                      })])
                   }
 
                   if (params.row.$isEdit) {
@@ -235,10 +301,11 @@
                         {
                             value: "范围"
                         },{
-                            value: "值"
+                            value: "枚举"
+                        },{
+                            value: "逻辑"
                         }
                     ];
-                    let type = params.row.type;
                     if (params.row.$isEdit) {
                         return h('div', [h("Select", {
                             props: {transfer:true},
@@ -246,7 +313,6 @@
                                 "on-change": (event) => {
                                     /*this.handleType(params.row, event);*/
                                     params.row.type = event;
-                                    type = event;
                                 }
                             }
                         }, contexttype.map((item) => {
@@ -284,30 +350,29 @@
                                               if (params.row.key === "时间") {
                                                   /*判断时间合法*/
                                                   params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
-                                                  this.handleSave(params.row);
-                                                  this.contextData[params.index]['type'] = params.row.type;
-                                                  this.contextData[params.index]['key'] = params.row.key;
-                                                  this.contextData[params.index]['value'] = params.row.value;
                                               } else alert("请输入正确的范围")
                                           } else {
                                               params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
-                                              this.handleSave(params.row);
-                                              this.contextData[params.index]['type'] = params.row.type;
-                                              this.contextData[params.index]['key'] = params.row.key;
-                                              this.contextData[params.index]['value'] = params.row.value;
                                           }
-                                      } else {
-                                          this.handleSave(params.row);
-                                          this.contextData[params.index]['type'] = params.row.type;
-                                          this.contextData[params.index]['key'] = params.row.key;
-                                          this.contextData[params.index]['value'] = params.row.value;
+                                      } else if (params.row.type === "枚举") {
+                                          params.row.value = params.row.value_list.map(function (c) {
+                                              return c
+                                          }).join(',');
+                                      } else if (params.row.type === "逻辑") {
                                       }
+                                      this.handleSave(params.row);
+                                      this.contextData[params.index]['type'] = params.row.type;
+                                      this.contextData[params.index]['key'] = params.row.key;
+                                      this.contextData[params.index]['value'] = params.row.value;
                                   } else {
                                       if (params.row.value.search('~')>-1) {
                                           params.row.type = '范围';
                                           params.row.value_left = params.row.value.substr(0, params.row.value.search('~'));
                                           params.row.value_right = params.row.value.substr(params.row.value.search('~') + 1, params.row.value.length)
-                                      } else params.row.type = "值";
+                                      } else if (params.row.value.search(',')>-1 || (params.row.value !== "是") && (params.row.value !== "否")) {
+                                          params.row.type = "枚举";
+                                          params.row.value_list = params.row.value.split(',')
+                                      } else params.row.type = "逻辑";
                                       this.handleEdit(params.row);
                                   }
                               }
@@ -366,42 +431,106 @@
                       return h("div", params.row.key);
                   }
               }
-          },{
-              title: 'value',
-              key: 'value',
+            },
+            {
+                title: 'value',
+                key: 'value',
                 render: (h, params) => {
-                    function edittype(type){
-                        if (type === "值") {
-                            return h('div', [h("Input", {
+                    function calc_len(value_list){
+                        let list = [];
+                        for (let i=0;i<value_list.length;i++){
+                            list.push([h("Input", {
                                 props: {
-                                    value: params.row.value
+                                    value: value_list[i]
+                                },
+                                style: {
+                                    width: "80%"
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.value = event;
+                                        value_list[i] = event;
+                                    }
+                                }
+                            }), h('Icon', { /*删除*/
+                                props: {
+                                    type: "md-remove",
+                                    size: "18"
+                                },
+                                on: {
+                                    click: () => {
+                                        params.row.value_list.splice(i, 1);
+                                        /*???*/
+                                        params.row.type = "1";
+                                        params.row.type = "枚举";
+                                    }
+                                }
+                            })]);
+                        }
+                        return list;
+                    }
+                    function edittype(type){
+                        if (type === "枚举") {
+                            if (params.row.value_list === undefined){
+                                params.row.value_list = [""];
+                            }
+                            return h('div', [h('div', calc_len(params.row.value_list)), h('Icon', {
+                                props: {
+                                    type: 'md-add',
+                                    size: "18"
+                                },
+                                on: {
+                                    click: () => {
+                                        params.row.value_list.push("");
+                                        /*???*/
+                                        params.row.type = "1";
+                                        params.row.type = "枚举";
                                     }
                                 }
                             })])
+                        } else if (type === "范围") {
+                            return h('div', [h("Input", {
+                                props: {
+                                    value: params.row.value_left
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.value_left = event;
+                                    }
+                                }
+                            }), h("Input", {
+                                props: {
+                                    value: params.row.value_right
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.value_right = event;
+                                    }
+                                }
+                            })])
+                        } else if (type === "逻辑"){
+                            let list = [
+                                {
+                                    value: "是"
+                                },{
+                                    value: "否"
+                                }
+                            ];
+                            return h("Select", {
+                                props: {transfer:true},
+                                on: {
+                                    "on-change": (event) => {
+                                        params.row.value = event
+                                    }
+                                }
+                            }, list.map((item) => {
+                                return h('Option', {
+                                    props: {
+                                        value: item.value,
+                                        label: item.value
+                                    }
+                                })
+                            }))
                         }
-                        else return h('div', [h("Input", {
-                            props: {
-                                value: params.row.value_left
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.value_left = event;
-                                }
-                            }
-                        }), h("Input", {
-                            props: {
-                                value: params.row.value_right
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.value_right = event;
-                                }
-                            }
-                        })])
                     }
 
                     if (params.row.$isEdit) {
@@ -410,7 +539,8 @@
                         return h("div", params.row.value);
                     }
                 }
-          },{
+            },
+            {
                 title: '类型',
                 key: 'type',
                 render: (h, params) => {
@@ -418,10 +548,11 @@
                         {
                             value: "范围"
                         },{
-                            value: "值"
+                            value: "枚举"
+                        },{
+                            value: "逻辑"
                         }
                     ];
-                    let type = params.row.type;
                     if (params.row.$isEdit) {
                         return h('div', [h("Select", {
                             props: {transfer:true},
@@ -429,7 +560,6 @@
                                 "on-change": (event) => {
                                     /*this.handleType(params.row, event);*/
                                     params.row.type = event;
-                                    type = event;
                                 }
                             }
                         }, contexttype.map((item) => {
@@ -467,30 +597,29 @@
                                               if (params.row.key === "时间") {
                                                   /*判断时间合法*/
                                                   params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
-                                                  this.handleSave(params.row);
-                                                  this.contextData1[params.index]['type'] = params.row.type;
-                                                  this.contextData1[params.index]['key'] = params.row.key;
-                                                  this.contextData1[params.index]['value'] = params.row.value;
                                               } else alert("请输入正确的范围")
                                           } else {
                                               params.row.value = params.row.value_left.toString() + '~' + params.row.value_right.toString();
-                                              this.handleSave(params.row);
-                                              this.contextData1[params.index]['type'] = params.row.type;
-                                              this.contextData1[params.index]['key'] = params.row.key;
-                                              this.contextData1[params.index]['value'] = params.row.value;
                                           }
-                                      } else {
-                                          this.handleSave(params.row);
-                                          this.contextData1[params.index]['type'] = params.row.type;
-                                          this.contextData1[params.index]['key'] = params.row.key;
-                                          this.contextData1[params.index]['value'] = params.row.value;
+                                      } else if (params.row.type === "枚举") {
+                                          params.row.value = params.row.value_list.map(function (c) {
+                                              return c
+                                          }).join(',');
+                                      } else if (params.row.type === "逻辑") {
                                       }
+                                      this.handleSave(params.row);
+                                      this.contextData1[params.index]['type'] = params.row.type;
+                                      this.contextData1[params.index]['key'] = params.row.key;
+                                      this.contextData1[params.index]['value'] = params.row.value;
                                   } else {
                                       if (params.row.value.search('~')>-1) {
                                           params.row.type = '范围';
                                           params.row.value_left = params.row.value.substr(0, params.row.value.search('~'));
                                           params.row.value_right = params.row.value.substr(params.row.value.search('~') + 1, params.row.value.length)
-                                      } else params.row.type = "值";
+                                      } else if (params.row.value.search(',')>-1 || (params.row.value !== "是") && (params.row.value !== "否")) {
+                                          params.row.type = "枚举";
+                                          params.row.value_list = params.row.value.split(',')
+                                      } else params.row.type = "逻辑";
                                       this.handleEdit(params.row);
                                   }
                               }
@@ -571,7 +700,9 @@
                                 for (var key in context) {
                                     if (context[key].search('~')>-1){
                                         type = "范围"
-                                    } else type = "值";
+                                    } else if (context[key].search(',')>-1 || (context[key] !== "是") && (context[key] !== "否")) {
+                                        type = "枚举";
+                                    } else type = "逻辑";
                                     this.contextData.push({
                                         $isEdit:false,
                                         key:key,
@@ -874,7 +1005,7 @@
                                               var that = this;
                                               var promiseAll = datamap.map(function(i){
                                                   var x = i.map(function(j){
-                                                      return that.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findtimesandp",{
+                                                      return that.$ajax.post("http://localhost:8088/findtimesandp",{
                                                           rpId:j.rpId,
                                                           spId:j.spId,
                                                           context:that.searchcontext
