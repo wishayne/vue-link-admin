@@ -22,11 +22,27 @@ const initParam = {// 新增参数
   },
   children: []
 }
-const requireState = {
-  0: '未匹配需求模式',
-  1: '未匹配服务模式',
-  2: '未生成服务方案',
+const adminState = {
+  0: '需求编辑状态',
+  1: '匹配需求模式',
+  2: '方案编辑状态',
   3: '已生成服务方案'
+}
+
+// 普通用户能看到的状态
+const userState = {
+  INITIALIZATION: '需求编辑状态', EDITING: '需求编辑状态', CREATED: '已生成方案', RUNNING: '执行中', FINISH: '执行完毕', NONE: '获取失败'
+}
+
+const getUserState = function(r) {
+  return userState[r]
+}
+
+const getAdminState = function(uState, aState) {
+  if (aState === 1 || aState === 2) {
+    return adminState[aState]
+  }
+  return userState[uState]
 }
 
 const getRestrictString = function(r) {
@@ -41,5 +57,5 @@ const getRestrictString = function(r) {
   }
 }
 
-export { initParam, requireState, getRestrictString }
+export { initParam, getAdminState, getRestrictString, getUserState }
 

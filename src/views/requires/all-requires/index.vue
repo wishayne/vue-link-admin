@@ -7,16 +7,17 @@
     <br>
     <div style="margin:auto;width: 30%">
       <el-input v-model="detail" placeholder="请输入需要搜索的内容">
-        <el-select slot="prepend" v-model="select" placeholder="请选择">
-          <el-option label="餐厅名" value="1" />
-          <el-option label="订单号" value="2" />
-          <el-option label="用户电话" value="3" />
-        </el-select>
+        <!--        <el-select slot="prepend" v-model="select" placeholder="请选择">-->
+        <!--          <el-option label="餐厅名" value="1" />-->
+        <!--          <el-option label="订单号" value="2" />-->
+        <!--          <el-option label="用户电话" value="3" />-->
+        <!--        </el-select>-->
         <el-button slot="append" icon="el-icon-search" @click="search" />
       </el-input>
     </div>
     <br>
     <el-table
+      id="table"
       v-loading="loading"
       :data="tableListData"
       :row-style="toggleDisplayTr"
@@ -50,10 +51,16 @@
           <span v-if="scope.row.__level === 0">{{ handleTime(scope.row.requireInfo.timestamp) }}</span>
         </template>
       </el-table-column>
-      <!--            状态-->
-      <el-table-column align="center" min-width="50" label="状态">
+      <!--      需求处理状态-->
+      <el-table-column align="center" min-width="50" label="需求处理状态">
         <template slot-scope="scope">
-          <span v-if="scope.row.__level === 0">{{ handleState(scope.row.requireInfo.state) }}</span>
+          <span v-if="scope.row.__level === 0">{{ getAdminState(scope.row.state, scope.row.requireInfo.state) }}</span>
+        </template>
+      </el-table-column>
+      <!--            用户关注状态-->
+      <el-table-column align="center" min-width="50" label="用户关注状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.__level === 0">{{ getUserState(scope.row.state) }}</span>
         </template>
       </el-table-column>
       <!--            操作-->
@@ -104,9 +111,11 @@
 
 <script>
 import baseUrl from './api'
-import { requireState, getRestrictString } from './restrict-options'
+import { getAdminState, getRestrictString, getUserState } from './restrict-options'
 import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
 import qs from 'qs'
+import require from '@/utils/request2'
+const mergeCol = new Set(['提出时间', '需求处理状态', '用户关注状态', '操作'])
 export default {
   name: 'AllRequires',
   data() {
@@ -117,7 +126,7 @@ export default {
       detail: '',
       flowableUrl: '',
       delsubData: { file: '', url: '' },
-      selectRequireId: -1,
+      selectRequire: {requireId: -1, id: -1},
       loading: false
     }
   },
@@ -127,6 +136,9 @@ export default {
     },
     iframeHeight: function() {
       return screen.availHeight * 0.85 + 'px'
+    },
+    username() {
+      return this.$store.getters.userinfo.name
     }
   },
   mounted() {
@@ -149,7 +161,6 @@ export default {
       return params.children.length === 0 ? 'permission_placeholder' : (this.foldList.indexOf(params.__identity) === -1 ? 'el-icon-minus' : 'el-icon-plus')
     },
     toggleMergeRow({ row, column, rowIndex, columnIndex }) {
-      const tableCol = document.getElementsByClassName('init_table')[0].childElementCount
       const foldList = this.foldList
       function childrenNum(goal) {
         let num = 1
@@ -162,7 +173,7 @@ export default {
         return num
       }
 
-      if (columnIndex <= tableCol && columnIndex > tableCol - 3) {
+      if (mergeCol.has(column.label)) {
         if (row.__level === 0) {
           const num = childrenNum(row)
           return {
@@ -195,12 +206,18 @@ export default {
       return parent
     },
     getAllRequire() {
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.$store.getters.userinfo.name}`)
-        .then(response => {
-          this.data = response.data
-        }).catch(_ => {
-          this.$message.error('没有需求录入')
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.username}`).then(response => {
+        this.data = response.data
+      }).then(() => {
+        this.data.forEach(item => {
+          require.get(`/solution/listByRequire/${item.requireInfo.requireId}`).then(res => {
+            this.$set(item, 'state', res[0].state)
+            this.$set(item, 'id', res[0].id)
+          })
         })
+      }).catch(_ => {
+        this.$message.error('没有需求录入')
+      })
     },
     matchRp(scope) {
       const requireId = scope.row.goal.requireId
@@ -229,7 +246,8 @@ export default {
           this.delsubData.file = response.data.savepath.split('/').reverse()[1]
           this.delsubData.url = response.data.url.split('=').reverse()[0]
         })
-        this.selectRequireId = requireId
+        this.selectRequire.requireId = requireId
+        this.selectRequire.id = scope.row.id
       }).catch(_ => {
         this.$message.error('匹配失败')
       })
@@ -241,16 +259,23 @@ export default {
         // TODO 异常处理
         this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
           this.loading = false
-          if (res.data.msg !== 'success') {
-            this.$message.error('服务方案生成失败' + res.data.msg)
-            return
-          }
+          // if (res.data.msg !== 'success') {
+          //   this.$message.error('服务方案生成失败' + res.data.msg)
+          //   return
+          // }
           // 更改状态
           this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
-            requireId: this.selectRequireId,
+            requireId: this.selectRequire.requireId,
             url: this.flowableUrl
           }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
-          ).then(res => {
+          ).then(() => {
+            require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
+              console.log(_)
+            })
+            require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
+              console.log(_)
+            })
+          }).then(res => {
             this.getAllRequire()
           }).catch((res) => {
           })
@@ -271,9 +296,6 @@ export default {
         .then(response => {
           this.data = response.data
         })
-    },
-    handleState(id) {
-      return requireState[id]
     },
     openUrl(url) {
       window.open(url)
@@ -309,7 +331,9 @@ export default {
       })
     },
     handleTime,
-    calcColor
+    calcColor,
+    getUserState,
+    getAdminState
   }
 }
 </script>
