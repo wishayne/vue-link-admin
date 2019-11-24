@@ -6,12 +6,11 @@
     </h1>
     <br>
     <div style="margin:auto;width: 30%">
-      <el-input v-model="detail" placeholder="请输入需要搜索的内容">
-        <!--        <el-select slot="prepend" v-model="select" placeholder="请选择">-->
-        <!--          <el-option label="餐厅名" value="1" />-->
-        <!--          <el-option label="订单号" value="2" />-->
-        <!--          <el-option label="用户电话" value="3" />-->
-        <!--        </el-select>-->
+      <el-input v-model="detail">
+        <el-select slot="prepend" v-model="searchOption" placeholder="请选择" value="1">
+          <el-option label="未生成方案" value="1" />
+          <el-option label="已生成方案" value="2" />
+        </el-select>
         <el-button slot="append" icon="el-icon-search" @click="search" />
       </el-input>
     </div>
@@ -81,7 +80,7 @@
           </span>
           <span v-else>
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
-            <el-button type="text" @click="execute(scope.row.requireInfo.serviceSchemeUrl)">执行</el-button>
+            <el-button type="text" @click="execute(scope.row)">执行</el-button>
           </span>
         </template>
       </el-table-column>
@@ -124,9 +123,10 @@ export default {
       foldList: [],
       visible: false,
       detail: '',
+      searchOption: '',
       flowableUrl: '',
       delsubData: { file: '', url: '' },
-      selectRequire: {requireId: -1, id: -1},
+      selectRequire: { requireId: -1, id: -1 },
       loading: false
     }
   },
@@ -259,10 +259,10 @@ export default {
         // TODO 异常处理
         this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
           this.loading = false
-          // if (res.data.msg !== 'success') {
-          //   this.$message.error('服务方案生成失败' + res.data.msg)
-          //   return
-          // }
+          if (res.data.msg !== 'success') {
+            this.$message.error('服务方案生成失败' + res.data.msg)
+            return
+          }
           // 更改状态
           this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
             requireId: this.selectRequire.requireId,
@@ -292,7 +292,7 @@ export default {
           type: 'warning'
         })
       }
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}`)
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}&option=${this.searchOption}`)
         .then(response => {
           this.data = response.data
         })
@@ -300,8 +300,10 @@ export default {
     openUrl(url) {
       window.open(url)
     },
-    execute(url) {
-      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&username=${this.$store.getters.userinfo.name}`).then((response) => {
+    execute(require) {
+      const url = require.requireInfo.serviceSchemeUrl
+      const id = require.id
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&id=${id}`).then((response) => {
         this.$message({
           message: '开始执行',
           type: 'success'
@@ -369,5 +371,7 @@ export default {
       position fixed
       right 5%
       bottom 10%
+    .el-select .el-input
+      width: 130px
 
 </style>
