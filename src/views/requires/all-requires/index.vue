@@ -6,12 +6,17 @@
     </h1>
     <br>
     <div style="margin:auto;width: 30%">
-      <el-input v-model="detail" placeholder="请输入需要搜索的内容">
+      <el-input v-model="detail">
+        <el-select slot="prepend" v-model="searchOption" placeholder="请选择" value="1">
+          <el-option label="未生成方案" value="1" />
+          <el-option label="已生成方案" value="2" />
+        </el-select>
         <el-button slot="append" icon="el-icon-search" @click="search" />
       </el-input>
     </div>
     <br>
     <el-table
+      id="table"
       v-loading="loading"
       :data="tableListData"
       :row-style="toggleDisplayTr"
@@ -35,9 +40,9 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
-          <span v-for="restrict in scope.row.goal.restricts" :key="restrict.key">
+          <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
-          </span>
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="提出时间">
@@ -45,10 +50,16 @@
           <span v-if="scope.row.__level === 0">{{ handleTime(scope.row.requireInfo.timestamp) }}</span>
         </template>
       </el-table-column>
-      <!--            状态-->
-      <el-table-column align="center" min-width="50" label="状态">
+      <!--      需求处理状态-->
+      <el-table-column align="center" min-width="50" label="需求处理状态">
         <template slot-scope="scope">
-          <span v-if="scope.row.__level === 0">{{ handleState(scope.row.requireInfo.state) }}</span>
+          <span v-if="scope.row.__level === 0">{{ getAdminState(scope.row.state, scope.row.requireInfo.state) }}</span>
+        </template>
+      </el-table-column>
+      <!--            用户关注状态-->
+      <el-table-column align="center" min-width="50" label="用户关注状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.__level === 0">{{ getUserState(scope.row.state) }}</span>
         </template>
       </el-table-column>
       <!--            操作-->
@@ -57,7 +68,7 @@
           <span v-if="scope.row.requireInfo.state === 0">
             <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配需求模式</el-button>
             <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
-              <el-button type="text">修改</el-button>
+              <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
             </el-tooltip>
           </span>
           <span v-else-if="scope.row.requireInfo.state === 1">
@@ -69,7 +80,7 @@
           </span>
           <span v-else>
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
-            <el-button type="text" @click="execute(scope.row.requireInfo.serviceSchemeUrl)">执行</el-button>
+            <el-button type="text" @click="execute(scope.row)">执行</el-button>
           </span>
         </template>
       </el-table-column>
@@ -86,7 +97,11 @@
       </el-row>
 
     </div>
-
+    <el-dialog :visible.sync="updateRequire.visible" :fullscreen="true">
+      <div v-if="updateRequire.visible" style="text-align: center;">
+        <tree-table :data="updateRequire.new" :is-tree="true" @submit="update" />
+      </div>
+    </el-dialog>
     <el-dialog
       :visible.sync="visible"
       :fullscreen="true"
@@ -99,21 +114,29 @@
 
 <script>
 import baseUrl from './api'
-import { requireState } from './restrict-options'
+import { getAdminState, getRestrictString, getUserState } from './restrict-options'
 import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
 import qs from 'qs'
+import require from '@/utils/request2'
+import TreeTable from '../component/TreeTable'
+import jiff from 'jiff'
+
+const mergeCol = new Set(['提出时间', '需求处理状态', '用户关注状态', '操作'])
 export default {
   name: 'AllRequires',
+  components: { TreeTable },
   data() {
     return {
       data: [],
       foldList: [],
       visible: false,
       detail: '',
+      searchOption: '',
       flowableUrl: '',
       delsubData: { file: '', url: '' },
-      selectRequireId: -1,
-      loading: false
+      selectRequire: { requireId: -1, id: -1 },
+      loading: false,
+      updateRequire: { visible: false, old: [], new: [] }
     }
   },
   computed: {
@@ -122,23 +145,16 @@ export default {
     },
     iframeHeight: function() {
       return screen.availHeight * 0.85 + 'px'
+    },
+    username() {
+      return this.$store.getters.userinfo.name
     }
   },
   mounted() {
     this.getAllRequire()
   },
   methods: {
-    getRestrictString(r) {
-      if (r.valueType === 'region') {
-        return ` ${r.key}:${r.minValue}~${r.maxValue}${r.unit}`
-      }
-      if (r.valueType === 'after') {
-        return ` 在${r.value}之后进行`
-      }
-      if (r.valueType !== '') {
-        return ` ${r.key}:${r.value}`
-      }
-    },
+    getRestrictString,
     toggleFoldingStatus(params) {
       this.foldList.includes(params.__identity) ? this.foldList.splice(this.foldList.indexOf(params.__identity), 1) : this.foldList.push(params.__identity)
     },
@@ -154,7 +170,6 @@ export default {
       return params.children.length === 0 ? 'permission_placeholder' : (this.foldList.indexOf(params.__identity) === -1 ? 'el-icon-minus' : 'el-icon-plus')
     },
     toggleMergeRow({ row, column, rowIndex, columnIndex }) {
-      const tableCol = document.getElementsByClassName('init_table')[0].childElementCount
       const foldList = this.foldList
       function childrenNum(goal) {
         let num = 1
@@ -167,7 +182,7 @@ export default {
         return num
       }
 
-      if (columnIndex <= tableCol && columnIndex > tableCol - 3) {
+      if (mergeCol.has(column.label)) {
         if (row.__level === 0) {
           const num = childrenNum(row)
           return {
@@ -200,12 +215,18 @@ export default {
       return parent
     },
     getAllRequire() {
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.$store.getters.userinfo.name}`)
-        .then(response => {
-          this.data = response.data
-        }).catch(_ => {
-          this.$message.error('没有需求录入')
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/get-all-requests?userId=${this.username}`).then(response => {
+        this.data = response.data
+      }).then(() => {
+        this.data.forEach(item => {
+          require.get(`/solution/listByRequire/${item.requireInfo.requireId}`).then(res => {
+            this.$set(item, 'state', res[0].state)
+            this.$set(item, 'id', res[0].id)
+          })
         })
+      }).catch(_ => {
+        this.$message.error('没有需求录入')
+      })
     },
     matchRp(scope) {
       const requireId = scope.row.goal.requireId
@@ -234,7 +255,8 @@ export default {
           this.delsubData.file = response.data.savepath.split('/').reverse()[1]
           this.delsubData.url = response.data.url.split('=').reverse()[0]
         })
-        this.selectRequireId = requireId
+        this.selectRequire.requireId = requireId
+        this.selectRequire.id = scope.row.id
       }).catch(_ => {
         this.$message.error('匹配失败')
       })
@@ -252,10 +274,17 @@ export default {
           }
           // 更改状态
           this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
-            requireId: this.selectRequireId,
+            requireId: this.selectRequire.requireId,
             url: this.flowableUrl
           }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
-          ).then(res => {
+          ).then(() => {
+            require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
+              console.log(_)
+            })
+            require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
+              console.log(_)
+            })
+          }).then(res => {
             this.getAllRequire()
           }).catch((res) => {
           })
@@ -266,21 +295,27 @@ export default {
       })
     },
     search() {
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}`)
+      if (this.detail === '') {
+        this.$message({
+          message: '搜索内容不可以为空',
+          type: 'warning'
+        })
+        return
+      }
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-goal?detail=${this.detail}&userId=${this.$store.getters.userinfo.name}&option=${this.searchOption}`)
         .then(response => {
           this.data = response.data
         })
     },
-    handleState(id) {
-      return requireState[id]
-    },
     openUrl(url) {
       window.open(url)
     },
-    execute(url) {
-      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&username=${this.$store.getters.userinfo.name}`).then((response) => {
+    execute(require) {
+      const url = require.requireInfo.serviceSchemeUrl
+      const id = require.id
+      this.$ajax.get(`${baseUrl.matchUrl}/api/runscheme?inputfile=${url.split('=')[1]}&id=${id}`).then((response) => {
         this.$message({
-          message: '执行成功',
+          message: '开始执行',
           type: 'success'
         })
       }).catch((respose) => {
@@ -307,8 +342,31 @@ export default {
         item.showRpResult = false
       })
     },
+    update(t) {
+      const a = jiff.diff(this.updateRequire.old[0], this.updateRequire.new[0])
+      this.updateRequire.new.forEach(item => {
+        delete item.requireInfo
+        delete item.id
+        delete item.state
+      })
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-require?requireId=${this.selectRequire.requireId}`,
+        this.updateRequire.new).then(_ => {
+        this.updateRequire.visible = false
+        this.getAllRequire()
+      })
+    },
+    modifyRequire(require) {
+      const requireId = require.requireInfo.requireId
+      // console.log(requireId)
+      this.updateRequire.old = [require]
+      this.updateRequire.new = JSON.parse(JSON.stringify([require]))
+      this.updateRequire.visible = true
+      this.selectRequire.requireId = require.requireInfo.requireId
+    },
     handleTime,
-    calcColor
+    calcColor,
+    getUserState,
+    getAdminState
   }
 }
 </script>
@@ -344,5 +402,7 @@ export default {
       position fixed
       right 5%
       bottom 10%
+    .el-select .el-input
+      width: 130px
 
 </style>

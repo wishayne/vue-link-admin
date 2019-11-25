@@ -13,9 +13,9 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
-          <span v-for="restrict in scope.row.goal.restricts" :key="Math.random()">
+          <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
-          </span>
+          </el-tag>
         </template>
       </el-table-column>
       <!--            操作-->
@@ -104,6 +104,8 @@
 
 <script>
 let restrictNum = 0
+import { getRestrictString } from '../all-requires/restrict-options'
+
 export default {
   name: 'TreeTable',
   props: [
@@ -156,17 +158,7 @@ export default {
   mounted() {
   },
   methods: {
-    getRestrictString(r) {
-      if (r.valueType === 'region') {
-        return `${r.key}:${r.minValue}~${r.maxValue}${r.unit}  `
-      }
-      if (r.valueType === 'after') {
-        return `在${r.value}之后进行  `
-      }
-      if (r.valueType !== '') {
-        return `${r.key}:${r.value}  `
-      }
-    },
+    getRestrictString,
     toggleFoldingStatus(params) {
       this.foldList.includes(params.__identity) ? this.foldList.splice(this.foldList.indexOf(params.__identity), 1) : this.foldList.push(params.__identity)
     },
