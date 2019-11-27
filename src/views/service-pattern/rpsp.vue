@@ -63,13 +63,13 @@
           @on-ok="okp"
           @on-cancel="cancel">
           <!--改这里-->
-          服务模式名称
+          服务模式
           <!--<Select v-model="model1" style="width:200px">
             <Option v-for="item in spList" :value="item.value" :key="item.value"></Option>
           </Select>-->
           <Input v-model="model1" style="width:150px"/>
           <Button @click="searchsp()">查询</Button>{{model1_id}}<br>
-          需求模式名称
+          需求模式
           <Input v-model="model2" style="width:150px"/>
           <Button @click="searchrp()">查询</Button>{{model2_id}}<br>
           <Table
@@ -682,10 +682,13 @@
                 let context = JSON.parse(params.row.context);
                 let row_contextlist = [];
                 for (let i in context){
+                    row_contextlist.push(h('Tag', {
+                        props: {
+                            color: "orange"
+                        }
+                    }, i + ' : ' + context[i]));
                     row_contextlist.push(h('br'));
-                    row_contextlist.push(h('p',i + ' : ' + context[i]))
                 }
-                row_contextlist.push(h('br'));
                 return params.row.$isEdit ? h('Button', {
                         props: {
                             type: 'primary',
@@ -885,7 +888,7 @@
           }],
         rpspColumn: [
               {
-                  title: '需求模式名称',
+                  title: '需求模式',
                   key: 'rpName',
                   render: (h, params) => {
                       return h("Input", {
@@ -901,7 +904,7 @@
                   }
               },
             {
-                  title: '服务模式名称',
+                  title: '服务模式',
                   key: 'spName',
                   render: (h, params) => {
                       return h("Input", {
@@ -921,10 +924,13 @@
                   render: (h, params) => {
                       let contextlist = []
                       for (let i=0; i<this.contextData1.length; i++){
-                          contextlist.push(h('br'));
-                          contextlist.push(h('p', this.contextData1[i]["key"] + ' : ' + this.contextData1[i]["value"]))
+                          contextlist.push(h('Tag', {
+                              props: {
+                                  color: "orange"
+                              }
+                          }, this.contextData1[i]["key"] + ' : ' + this.contextData1[i]["value"]))
+                          contextlist.push(h('br'))
                       }
-                      contextlist.push(h('br'));
                       console.log("contextlist", contextlist)
                       return [h("div", {
                           style:{
