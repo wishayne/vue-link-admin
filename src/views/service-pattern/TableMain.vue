@@ -817,7 +817,7 @@
         },
 
         async loadCategories() {
-            return this.$ajax.get('http://10.147.18.103:8080/serviceCategory/listRoots').then(data => {
+            return this.$ajax.get('http://service-registry-linan.192.168.42.159.nip.io/serviceCategory/listRoots').then(data => {
                 const that = this;
                 this.treeData = data.data
                 function edit(list) {
