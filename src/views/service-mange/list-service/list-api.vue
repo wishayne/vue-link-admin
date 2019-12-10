@@ -38,7 +38,7 @@
       <el-table-column label="输入列表" width="90">
         <template slot-scope="scope">
           <el-tag
-            v-for="(input,index) in scope.row.hasInput"
+            v-for="(input,index) in uniq(scope.row.hasInput) "
             :key="index"
             size="mini"
           >
@@ -306,6 +306,9 @@ export default {
       } catch (e) {
         this.listLoading = false
       }
+    },
+    uniq(arr) {
+      return Array.from(new Set(arr))
     }
   }
 }
