@@ -19,6 +19,11 @@ import {VTable, VPagination} from 'vue-easytable'
 
 Vue.component(VTable.name, VTable)
 Vue.component(VPagination.name, VPagination)
+
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+Vue.component('Treeselect', Treeselect)
+
 //引入axios
 import axios from 'axios'
 

@@ -17,13 +17,15 @@
             ></Table>
             <div style="margin: 10px;overflow: hidden">
               <Button @click="addRow()">增加</Button>
+<!--
+              <treeselect :multiple="true" :options="treeData" :open-on-click="true" :append-to-body="true"/>-->
               <div style="float: right;">
                 <Page :total="spAllData.length" :page-size=pageSize show-total :current="1" @on-change="changePage" show-elevator size="small"></Page>
               </div>
             </div>
+
         </Card>
         <Alert>{{opensp}}</Alert>
-
         <Modal
           v-model="modal1"
           title="服务模式实例"
@@ -44,9 +46,10 @@
 </template>
 
 <script>
+
   export default {
-    name: "table-main",
-    data() {
+      name: "table-main",
+      data() {
       return {
         process_id: "",
         process_func: "",
@@ -58,7 +61,8 @@
         opensp : "消息提示",
         pageSize : 5,
         tableData: [],
-        processColumn: [{
+        processColumn: [
+            {
                 title: ' ',
                 key: 'spName',
                 render: (h, params) => {
@@ -290,16 +294,20 @@
                                     params.row.spFunc = event;
                                 }
                             }
-                        }), h('br'), "服务模式领域：", h("Input", {
-                            props: {
-                                value: params.row.spField
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.spField = event;
+                        }), h('br'), "服务模式领域：", h('treeselect', {
+                                props: {
+                                    multiple: true,
+                                    "append-to-body": true,
+                                    options: this.treeData
+                                },
+                                on: {
+                                    input: function(event){
+                                        params.row.spField = event.toString();
+                                        console.log(params.row.spField)
+                                    }
                                 }
-                            }
-                        })])
+                            })
+                        ])
                     } else return h('div', {
                         style:{
                             fontSize: "120%"
@@ -533,7 +541,8 @@
                           }
                       });
                   }
-              }, {
+              },
+            {
                   title: '功能信息',
                   key: 'spFunc',
                   render: (h, params) => {
@@ -548,22 +557,44 @@
                           }
                       });
                   }
-              }, {
+              },
+            {
                   title: '领域信息',
                   key: 'spField',
                   render: (h, params) => {
-                      return h("Input", {
+                        return h('treeselect', {
                           props: {
+                              multiple: true,
+                              "append-to-body": true,
+                              transfer: true,
+                              options: this.treeData
+                          },
+                          on: {
+                              input: function(event){
+                                  params.row.spField = event.toString();
+                                  console.log(params.row.spField)
+                              }
+                          }
+                      })
+                    }
+                     /* h("Tree", {
+                          props: {
+                              // v-model="addForm.categories"
+                              data:"treeData",
+                  //     node-key="id"
+                  //     size="mini"
+                  // :multiple="true"
+                  // :props="treeProps"
                               value: params.row.spField
                           },
                           on: {
                               input: function (event) {
                                   params.row.spField = event;
                               }
-                          }
-                      });
-                  }
-              },
+                          },
+
+                      });*/
+            },
               {
                   title: '操作',
                   key: 'action',
@@ -627,9 +658,10 @@
         spIdList: [],
         spNameList: [],
         spFuncList: [],
-        spFieldList: []
+        spFieldList: [],
+          categories: new Map(),
+          treeData: [],
         //EChart数据列
-
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
@@ -696,9 +728,13 @@
             console.log(error);
         });
 
+        this.loadCategories()
     },
     methods: {
       //点击了修改按钮
+        handleCheckChange (data) {
+          alert(data)
+        },
       handleEdit(row) {
         this.$set(row, "$isEdit", true);
       },
@@ -778,7 +814,35 @@
                 width: img.width + 100,
                 content: `<img src="${this.spData[index].imgurl}">`
             })
-        }
+        },
+
+        async loadCategories() {
+            return this.$ajax.get('http://service-registry-linan.192.168.42.159.nip.io/serviceCategory/listRoots').then(data => {
+                const that = this;
+                this.treeData = data.data
+                function edit(list) {
+                    for (let i = 0; i < list.length; i++) {
+                        if (list[i].children != null && list[i].children.length > 0) {
+                            list[i].children = edit(list[i].children)
+                        } else delete list[i].children
+                        list[i].id = list[i].catelogyName;
+                        list[i].label = list[i].catelogyName;
+                    }
+                    return list
+                }
+                this.treeData = edit(this.treeData)
+                function walk(list) {
+                    for (let i = 0; i < list.length; i++) {
+                        that.categories.set(list[i].catelogyId, list[i]);
+                        if (list[i].children != null && list[i].children.length > 0) {
+                            walk(list[i].children)
+                        }
+                    }
+                }
+                walk(this.treeData)
+            })
+        },
+
     },
 
   }
