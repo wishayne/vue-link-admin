@@ -17,7 +17,7 @@
           ></Table>
           <div style="margin: 10px;overflow: hidden">
             <Button @click="addRow()">增加</Button>
-            <Button @click="update()">更新匹配度</Button>
+            <Button @click="update()">构造偶对表</Button>
             <div style="float: right;">
               <Page :total="searchAllData.length" :page-size=pageSize show-total :current="1" @on-change="changePage" show-elevator size="small"></Page>
             </div>
@@ -104,9 +104,6 @@
         modal2 : false,
         modal3: false,
         rpAllIdNameList: [],
-        update(){
-            this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/updatep')
-        },
           patternData:[],
           pattern:[
               {
@@ -1134,6 +1131,11 @@
       },
       handleType(row, event) {
         this.$set(row, "type", event);
+      },
+      update(){
+          this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/bmm').then(res => {
+              alert("偶对表构造成功，构造时间为" + res.data + "s")
+          })
       },
       addRow(){
           console.log(this.searchData)
