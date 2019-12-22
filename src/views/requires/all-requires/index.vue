@@ -67,9 +67,7 @@
         <template slot-scope="scope">
           <span v-if="scope.row.requireInfo.state === 0">
             <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配需求模式</el-button>
-            <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
-              <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
-            </el-tooltip>
+            <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
           </span>
           <span v-else-if="scope.row.requireInfo.state === 1">
             <el-button v-if="scope.row.__level === 0" type="text" @click="matchSp(scope)">生成服务方案</el-button>
@@ -82,6 +80,14 @@
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
             <el-button type="text" @click="execute(scope.row)">执行</el-button>
           </span>
+          <el-popover
+            placement="top-start"
+            width="200"
+            trigger="hover">
+            <p v-for="(val,key,i) in scope.row.contexts">{{key}}:{{val}}</p>
+
+            <el-button type="text" slot="reference">context</el-button>
+          </el-popover>
         </template>
       </el-table-column>
     </el-table>
