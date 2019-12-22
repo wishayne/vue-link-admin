@@ -17,7 +17,8 @@
           ></Table>
           <div style="margin: 10px;overflow: hidden">
             <Button @click="addRow()">增加</Button>
-            <Button @click="update()">构造偶对表</Button>
+            <Button @click="addmm()">构造偶对表</Button>
+            <Button @click="updatemm()">更新偶对表</Button>
             <div style="float: right;">
               <Page :total="searchAllData.length" :page-size=pageSize show-total :current="1" @on-change="changePage" show-elevator size="small"></Page>
             </div>
@@ -791,7 +792,8 @@
                                 rpId:params.row.rpId,
                                 spId:params.row.spId,
                                 times:params.row.times,
-                                context:params.row.context
+                                context:params.row.context,
+                                p:1
                             }).catch(function (error) {
                                 console.log(error);
                             });
@@ -1132,9 +1134,14 @@
       handleType(row, event) {
         this.$set(row, "type", event);
       },
-      update(){
+      addmm(){
           this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/bmm').then(res => {
-              alert("偶对表构造成功，构造时间为" + res.data + "s")
+              alert("偶对表构造成功，分" + res.data.number.toString() + "类，轮廓系数" + res.data.score.toString())
+          })
+      },
+      updatemm(){
+          this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/umm').then(res => {
+              alert("偶对表构造成功，分" + res.data.number.toString() + "类，轮廓系数" + res.data.score.toString())
           })
       },
       addRow(){
