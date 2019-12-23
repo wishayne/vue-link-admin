@@ -6,17 +6,27 @@
         <el-form-item label="服务名称">
           <el-input v-model="addForm.serviceName" autosize prop="serviceName" />
         </el-form-item>
-        <el-form-item label="所属领域">
-          <el-tree-select
-            ref="tree"
-            v-model="addForm.categories"
-            :data="treeData"
-            node-key="id"
-            size="mini"
-            :multiple="true"
-            :props="treeProps"
-          />
+        <el-form-item label="Feature">
+          <el-select v-model="addForm.feature.feature_id" placeholder="请选择">
+            <el-option
+              v-for="item in features"
+              :key="item.featureId"
+              :label="item.name"
+              :value="item.featureId"
+            />
+          </el-select>
         </el-form-item>
+        <!--<el-form-item label="所属领域">-->
+        <!--<el-tree-select-->
+        <!--ref="tree"-->
+        <!--v-model="addForm.categories"-->
+        <!--:data="treeData"-->
+        <!--node-key="id"-->
+        <!--size="mini"-->
+        <!--:multiple="true"-->
+        <!--:props="treeProps"-->
+        <!--/>-->
+        <!--</el-form-item>-->
         <el-form-item label="提供商">
           <el-select v-model="addForm.provider" placeholder="请选择">
             <el-option
@@ -149,12 +159,16 @@ export default {
           'id': 2
         }
       ],
+      features: [],
       protocols: protocols,
       addForm: {
         serviceName: '',
         categories: [],
         provider: {
           providerId: 1
+        },
+        feature: {
+          featureId: 0
         },
         serviceType: 'API',
         textDescription: '',
@@ -185,6 +199,7 @@ export default {
   created: function() {
     this.loadProviders()
     this.loadCategories()
+    this.loadFeatures()
   },
   methods: {
     async loadProviders() {
@@ -193,6 +208,14 @@ export default {
         method: 'get'
       }).then(data => {
         this.providerData = data
+      })
+    },
+    async loadFeatures() {
+      return request({
+        url: '/serviceFeature/list',
+        method: 'get'
+      }).then(data => {
+        this.features = data
       })
     },
     async loadCategories() {

@@ -7,51 +7,9 @@
     <el-main>
       <el-row>
         <el-table
-          :data="solution_list"
-          style="width: 100%;"
-          border
-        >
-          <el-table-column width="50">
-            <template slot-scope="scope">
-              <span>{{ scope.$index + 1 }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            property="description"
-            label="方案描述"
-          />
-          <el-table-column
-            label="发起者"
-          >
-            <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ scope.row.creator.viewName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="状态"
-          >
-            <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ stateMap[scope.row.state] }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="方案创建时间"
-          >
-            <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ scope.row.createTimestamp | formatDate }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="方案启动时间"
-          >
-            <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ scope.row.startTimestamp | formatDate }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
-        <el-table
           :data="taskList"
           style="width: 100%;"
+          height="450"
           highlight-current-row
           border
           @current-change="handleCurrentChange"
@@ -67,6 +25,7 @@
           </el-table-column>
           <el-table-column
             label="服务描述"
+            width="120"
           >
             <template slot-scope="scope">
               <span>{{ scope.row.serviceInfo.textDescription }}</span>
@@ -74,11 +33,12 @@
           </el-table-column>
           <el-table-column
             label="服务领域"
+            width="120"
           >
             <template slot-scope="scope">
               <el-tag
                 v-for="(catelogy,index) in scope.row.serviceInfo.categoryMappings"
-                :key="index"
+                :key="raw_index"
                 :type="catelogy.fullLink?'success':'info'"
                 size="mini"
               >
@@ -88,6 +48,7 @@
           </el-table-column>
           <el-table-column
             label="服务当前结果"
+            width="120"
           >
             <template slot-scope="scope">
               <span>{{ scope.row.currentValue }}</span>
@@ -96,34 +57,30 @@
         </el-table>
       </el-row>
       <el-row v-if="status!=null && status.serviceInfo!=null && status.serviceInfo.apis!=null">
-        <el-col :span="12">
-          <el-table
-            :data="filterApi(status.serviceInfo.apis)"
-            style="width: 100%;"
-            height="450"
-            border
-          >
-            <el-table-column type="index" width="50" />
-            <el-table-column prop="description" label="接口描述" />
-            <el-table-column label="相关角色">
-              <template slot-scope="scope">
-                <span>{{ scope.row.roles.map(role=>role.id.name).join(',') }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="90">
-              <template slot-scope="scope">
-                <button v-if="scope.row.apiType=='FINISH'" @click="finishAPI(scope.row,status.sessionId,status.serviceInfo.serviceId)">结束服务</button>
-                <button v-if="scope.row.apiType=='VIEW'" @click="viewAPI(scope.row,status.sessionId)">执行该服务</button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-col>
-        <el-col :span="12">
-          <iframe v-if="whenView" :src="sub_url" width="100%" height="450px" />
-        </el-col>
-
+        <el-table
+          :data="filterApi(status.serviceInfo.apis)"
+          style="width: 100%;"
+          height="450"
+          border
+        >
+          <el-table-column type="index" width="50" />
+          <el-table-column prop="description" label="接口描述" width="120" />
+          <el-table-column label="相关角色" width="90">
+            <template slot-scope="scope">
+              <span>{{ scope.row.roles.map(role=>role.id.name).join(',') }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="90">
+            <template slot-scope="scope">
+              <button v-if="scope.row.apiType=='FINISH'" @click="finishAPI(scope.row,status.sessionId,status.serviceInfo.serviceId)">结束服务</button>
+              <button v-if="scope.row.apiType=='VIEW'" @click="viewAPI(scope.row,status.sessionId)">执行该服务</button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-row>
-      <el-row />
+      <el-row>
+        <iframe v-if="whenView" :src="sub_url" width="400px" height="500px" />
+      </el-row>
     </el-main>
   </el-container>
 </template>
@@ -133,33 +90,8 @@ export default {
   components: {
 
   },
-  filters: {
-    formatDate: function(value) {
-      const date = new Date(value)
-      if (date.getTime() < new Date(2000, 1, 1).getTime()) {
-        return ''
-      }
-      const y = date.getFullYear()
-      let MM = date.getMonth() + 1
-      MM = MM < 10 ? ('0' + MM) : MM
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let m = date.getMinutes()
-      m = m < 10 ? ('0' + m) : m
-      let s = date.getSeconds()
-      s = s < 10 ? ('0' + s) : s
-      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
-    }
-  },
   data() {
     return {
-      solution_list: [],
-      stateMap: {
-        INITIALIZATION: '待生成', EDITING: '编辑中', CREATED: '已生成', RUNNING: '执行中', FINISH: '执行完毕',
-        '': '全部'
-      },
       tableData: [],
       roles: [],
       taskList: [],
@@ -174,40 +106,28 @@ export default {
   },
   mounted: function() {
     request({
-      url: '/solution/query',
-      method: 'get',
-      params: {
-        page: 0,
-        limit: 10,
-        creator: '',
-        description: '',
-        state: 'RUNNING'
-      }
-    }).then(res => {
-      this.solution_list = res.content
-    }).then(() => request({
       url: `/process/sessions`,
       method: 'get'
     })
-    )
       .then(data => {
         this.tableData = data
       }).then(() => {
         return request({
           url: '/group/list',
           method: 'get'
+        })
+      })
+      .then(data => {
+        this.roles = data.filter(dt => dt.users.some(u => u.name == this.$store.getters.userinfo.name)).map(x => x.groupName)
+      }).then(() => {
+        request({
+          url: '/task/list',
+          method: 'get'
         }).then(data => {
-          this.roles = data.filter(dt => dt.users.some(u => u.name == this.$store.getters.userinfo.name)).map(x => x.groupName)
-        }).then(() => {
-          request({
-            url: '/task/list',
-            method: 'get'
-          }).then(data => {
-            let taskList = this.tableData.flatMap(o => o.statuses.map(st => { st.sessionId = o.sessionId; return st }))
-            taskList = taskList.filter(s => s.serviceStage == 'RUNNING' && data.some(d => s.activityName == d.name))
-            taskList = taskList.filter(s => this.roles.some(r => s.serviceInfo.roles.some(sr => sr.id.name == r)))
-            this.taskList = taskList
-          })
+          let taskList = this.tableData.flatMap(o => o.statuses.map(st => { st.sessionId = o.sessionId; return st }))
+          taskList = taskList.filter(s => s.serviceStage == 'RUNNING' && data.some(d => s.activityName == d.name))
+          taskList = taskList.filter(s => this.roles.some(r => s.serviceInfo.roles.some(sr => sr.id.name == r)))
+          this.taskList = taskList
         })
       })
   },
