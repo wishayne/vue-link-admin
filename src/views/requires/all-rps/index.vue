@@ -59,6 +59,13 @@
 
     <br>
     <el-button
+      tyep="success"
+      icon="el-icon-refresh"
+      circle
+      class="rp-miner"
+      @click="mineRP"
+    />
+    <el-button
       type="primary"
       icon="el-icon-plus"
       circle
@@ -119,7 +126,11 @@ export default {
         children: []
       }],
       selectRpId: -1,
-      showDialog: false
+      showDialog: false,
+      rpMinerDialog: {
+        show: false,
+        data: []
+      }
     }
   },
   computed: {
@@ -205,7 +216,17 @@ export default {
         this.getAllRPs()
       })
     },
-    handleTime: handleTime
+    handleTime: handleTime,
+    mineRP() {
+      this.$ajax.get(`${process.env.VUE_APP_RP_MINER_BASE_URL}/api/rp-miner`).then(res => {
+        this.selectedRP = {
+          data: res.data,
+          info: {
+            name: '新挖掘的需求模式'
+          }
+        }
+      })
+    }
   }
 }
 </script>
@@ -246,5 +267,9 @@ export default {
     .add-rp
       position fixed
       right 5%
+      bottom 10%
+    .rp-miner
+      position fixed
+      right 8%
       bottom 10%
 </style>
