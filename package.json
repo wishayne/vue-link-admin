@@ -44,6 +44,7 @@
     "babel-polyfill": "^6.26.0",
     "clipboard": "2.0.4",
     "codemirror": "5.45.0",
+    "d3": "^5.14.2",
     "driver.js": "0.9.5",
     "dropzone": "5.5.1",
     "echarts": "4.2.1",

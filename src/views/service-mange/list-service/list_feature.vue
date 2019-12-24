@@ -27,9 +27,6 @@
               <el-col :span="4">
                 <el-input v-model="listQuery.description" placeholder="描述" />
               </el-col>
-              <el-col :span="4">
-                <el-input v-model="listQuery.provider" placeholder="提供商" />
-              </el-col>
               <el-col :span="8">
                 <el-button
                   class="filter-item"
@@ -56,18 +53,10 @@
               </template>
             </el-table-column>
             <el-table-column
-              property="serviceName"
-              label="服务名称"
+              property="name"
+              label="Feature名称"
               width="120"
             />
-            <el-table-column
-              label="Feature"
-              width="150"
-            >
-              <template slot-scope="scope">
-                <span style="margin-left: 10px">{{ scope.row.feature.name }}</span>
-              </template>
-            </el-table-column>
             <el-table-column
               label="所属领域"
               width="150"
@@ -85,47 +74,10 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="服务提供商"
-              width="120"
-            >
-              <template slot-scope="scope">
-                <span style="margin-left: 10px">{{ getProviderName(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
               property="textDescription"
               label="服务描述"
               width="120"
             />
-            <el-table-column
-              property="version"
-              label="服务版本"
-              width="120"
-            />
-            <el-table-column
-              label="服务创建时间"
-              width="120"
-            >
-              <template slot-scope="scope">
-                <span style="margin-left: 10px">{{ scope.row.createTimestamp | formatDate }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="角色列表"
-              width="120"
-            >
-              <template slot-scope="scope">
-                <span style="margin-left: 10px">{{ getRoleName(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="接口详情"
-              width="120"
-            >
-              <template slot-scope="scope">
-                <router-link :to="{path:'/service-mange/list-service/list-api',query: {serviceId: scope.row.serviceId}}">查看接口详情</router-link>
-              </template>
-            </el-table-column>
           </el-table>
           <pagination
             v-show="total>0"
@@ -267,7 +219,7 @@ export default {
           query.category = results.map(value => value[value.length - 1].catelogyName).join(',')
         }
         const res = await request({
-          url: '/service/query',
+          url: '/serviceFeature/query',
           method: 'get',
           params: query
         })

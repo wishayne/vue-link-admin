@@ -4,8 +4,10 @@ import Layout from '@/layout'
 import Vue from 'vue'
 import Axios from 'axios'
 // Axios.defaults.baseURL = `http://192.168.42.159:30534/`
-//Axios.defaults.baseURL = `http://10.147.18.103:8080/`
-Axios.defaults.baseURL = `http://service-registry-linan.192.168.42.159.nip.io/`
+// Axios.defaults.baseURL = `http://10.147.18.103:8080/`
+// Axios.defaults.baseURL = `http://service-registry-linan.192.168.42.159.nip.io/`
+Axios.defaults.baseURL = process.env.VUE_APP_SERVICE_MANAGE_BASE_URL
+
 Vue.prototype.$http = Axios
 const serviceSolutionRouter = {
   path: '/service-solution',

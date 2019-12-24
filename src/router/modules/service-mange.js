@@ -4,8 +4,9 @@ import Layout from '@/layout'
 import Vue from 'vue'
 import Axios from 'axios'
 // Axios.defaults.baseURL = `http://192.168.42.159:30534/`
-//Axios.defaults.baseURL = `http://10.147.18.103:8080/`
-Axios.defaults.baseURL = `http://service-registry-linan.192.168.42.159.nip.io/`
+// Axios.defaults.baseURL = `http://10.147.18.103:8080/`
+Axios.defaults.baseURL = process.env.VUE_APP_SERVICE_MANAGE_BASE_URL
+// Axios.defaults.baseURL = `http://service-registry-linan.192.168.42.159.nip.io/`
 Vue.prototype.$http = Axios
 
 const serviceManageRouter = {
@@ -56,6 +57,22 @@ const serviceManageRouter = {
       name: 'service-provider',
       meta: {
         title: '服务提供商管理', noCache: true
+      }
+    },
+    {
+      path: '/service-mange/add-service/add_feature',
+      component: () => import('@/views/service-mange/add-service/add_feature'),
+      name: 'add-feature',
+      meta: {
+        title: '服务类型新增', noCache: true
+      }
+    },
+    {
+      path: '/service-mange/list-service/list_feature',
+      component: () => import('@/views/service-mange/list-service/list_feature'),
+      name: 'list-service',
+      meta: {
+        title: '服务类型检索', noCache: true
       }
     }
   ]
