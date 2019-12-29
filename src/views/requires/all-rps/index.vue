@@ -26,6 +26,13 @@
           {{ handleTime(scope.row.info.timestamp) }}
         </template>
       </el-table-column>
+      <el-table-column prop="info.frequency" label="使用频率" align="center" />
+      <el-table-column prop="info.support" label="支持度" align="center" />
+      <el-table-column prop="info.fresh" label="新鲜度" align="center">
+        <template slot-scope="scope">
+          {{ handleTime(scope.row.info.fresh) }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" width="100" label="操作">
         <template slot-scope="scope">
           <el-button type="text" @click="modifyRpDialog(scope)">修改</el-button>
