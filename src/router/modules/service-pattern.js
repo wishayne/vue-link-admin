@@ -27,6 +27,22 @@ const spRouter = {
       meta: {
         title: '服务模式维护', noCache: true
       }
+    },
+    {
+      path: '/service-pattern/list-domain-inner',
+      component: () => import('@/views/service-pattern/list-domain-inner'),
+      name: 'list-domain-inner',
+      meta: {
+        title: '领域内服务模式', noCache: true
+      }
+    },
+    {
+      path: '/service-pattern/list-provider-inner',
+      component: () => import('@/views/service-pattern/list-provider-inner'),
+      name: 'list-provider-inner',
+      meta: {
+        title: '组织内服务模式', noCache: true
+      }
     }
   ]
 }
