@@ -1,7 +1,9 @@
 <template>
-    <div>
-        <c-sb></c-sb>
+    <div class="product-detail-wrapper">
+        <div class="content-wrapper">
+            <c-sb></c-sb>
         <c-pd :scroll-num="scroll"></c-pd>
+        </div>
     </div>
 </template>
 
@@ -37,3 +39,14 @@
         }
     }
 </script>
+<style lang="less" scoped>
+    @import '~@/styles/less/common.less';
+
+    .product-detail-wrapper{
+        width: 100%;
+        background-color: #f6f6f6;
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+</style>

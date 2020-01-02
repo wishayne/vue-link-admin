@@ -1,23 +1,18 @@
 <template>
     <nav class="nav-wrapper">
         <ul class="content-wrapper">
-            <li class="nav-item" v-for="item in nav_data" :data-type="item.name">
+            <li class="nav-item">
                 <span class="title">
-                    {{ item.name }}
-                    <template v-if="item.children && item.children.length">
-                        <i class="arrow"></i><i class="second-arrow"></i>
-                    </template>
+                    {{ home.name }}
+                    <i class="arrow"></i><i class="second-arrow"></i>
                 </span>
-                <ul class="second-nav" v-if="item.children && item.children.length">
-                    <li class="second-nav-item" v-for="second in item.children">
-                        <span class="second-title" @click="changeNav(item.base + second.target)">{{ second.name }}</span>
+                <ul class="second-nav">
+                    <li class="second-nav-item">
+                        <span class="second-title" @click="changeNav(home.target)">{{ home.name }}</span>
                     </li>
-                    <div class="second-skip-wrapper" v-if="item.icon">
-                        <i class="skip-icon"></i>
-                        <span class="skip-title">{{ item.icon }} ></span>
-                    </div>
                 </ul>
             </li>
+            <nav-item v-for="route in permission_routes" :key="route.path" :item="route"  :base-path="route.path" :nav="nav" />
 
             <ul class="nav-info">
                 <li class="nav-status">
@@ -29,85 +24,49 @@
                 <li class="nav-my">我的<i class="nav-info-arrow"></i></li>
 
                 <div class="nav-info-detail">
-                    <button class="nav-login-btn">登录</button>
+                    <button class="nav-login-btn" @click="login">登录</button>
                     <p class="nav-detail-title">全部需求</p>
                 </div>
             </ul>
-
-
-
         </ul>
     </nav>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import navItem from './NavItem'
 
 export default {
-    data(){
-        return {
-            nav_data: [
-                {
-                    name: '首页',
-                    base: '/',
-                    children:[
-                        { name: '首页', target: '' }
-                    ]
-                },
-                {
-                    name: '已有服务',
-                    base: '/service-mange',
-                    children: [
-                        {name: '服务注册', target: '/add-service' },
-                        {name: '服务检索', target: '/list-service' },
-                        {name: '服务领域', target: '/service-category' },
-                        {name: '服务提供商', target: '/service-provider' }
-                    ]
-                },
-                {
-                    name: '服务模式',
-                    base: '/service-pattern',
-                    children: [
-                        {name: '偶对表', target: '/rpsp' },
-                        {name: '服务模式', target: '/TableMain' }
-                    ]
-
-                },
-                {
-                    name: '服务方案',
-                    base: '/service-solution',
-                    children: [
-                        {name: '服务方案', target: '/list-solution' },
-                        {name: '任务清单', target: '/list-by-user' },
-                        {name: '执行中方案', target: '/list-by-creator' }
-                    ]
-
-                },
-                {
-                    name: '需求模式',
-                    base: '/requires',
-                    children: [
-                        {name: '个人需求', target: '/all-requires/index' },
-                        {name: '需求模式', target: '/all-rps/index' }
-                    ]
-
-                }
-
-
-            ]
-        }
-    },
-    created(){
-
-    },
-    methods: {
-        changeNav(target){
-            this.$router.push(target)
-        },
-      async logout() {
-          await this.$store.dispatch('user/logout')
-          this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-        }
+  components: {
+    navItem
+  },
+  computed: {
+    ...mapGetters([
+      'permission_routes',
+      'sidebar'
+    ])
+  },
+  data() {
+    return {
+      home: {
+        name: '首页',
+        target: '/home'
+      },
+      nav: true
     }
+  },
+  methods: {
+    changeNav(target){
+      this.$router.push(target)
+    },
+    login(){
+      this.$router.push('/login');
+    },
+    async logout() {
+      await this.$store.dispatch('user/logout')
+      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    }
+  }
 }
 </script>
 
@@ -130,209 +89,105 @@ export default {
             color: #fff;
             cursor: pointer;
 
-            .title{
-                // height: 14px;
-                font-size: 14px;
-                border-right: 1px solid #1d67dd;
-                padding: 0 7px;
-                position: relative;
-
-                .arrow{
-                    display: inline-block;
-                    transition: all ease-out .1s;
-                    .arrow_down(3px, #fff);
-                    margin-left: 2px;
-                }
-                .second-arrow{
-                    display: none;
-                    position: absolute;
-                    top: 5px;
-                    left: 10px;
-                    .arrow_up(8px);
-                }
-            }
-
-            .second-nav{
-                display: none;
-                width: 100%;
-                height: 40px;
-                border: 1px solid #2577e3;
-                border-top: none;
-                color: #333;
-                background-color: #fff;
-                position: absolute;
-                left: 0;
-                bottom: -40px;
-                box-sizing: border-box;
-
-                &-item{
-                    display: inline-block;
-                    height: 40px;
-                    line-height: 40px;
-
-                    .second-title{
-                        font-size: 14px;
-                        border-right: 1px solid #ccc;
-                        padding: 0 8px;
-
-                        &:hover{
-                            color: #2577e3;
-                            cursor: pointer;
-                        }
-                    }
-
-                    &:last-of-type{
-                        .second-title{
-                            border-right: none;
-                        }
-                    }
-                }
-
-                .second-skip-wrapper{
-                    height: 40px;
-                    line-height: 40px;
-                    position: absolute;
-                    top: 0;
-                    right: 18px;
-
-                    .skip-icon{
-                        #display_type > .dsp-middle;
-                        width: 16px;
-                        height: 16px;
-                        margin-right: 5px;
-                        background-image: url('http://pic.c-ctrip.com/platform/online/home/un_icon_index_type20170111.png');
-                        background-repeat: no-repeat;
-                    }
-
-                    .skip-title{
-                        #display_type > .dsp-middle;
-                        font-size: 14px;
-                    }
-                }
-            }
-
-            &:last-of-type{
                 .title{
-                    border-right: none;
-                }
-            }
-            &:hover{
-                background-color: #0a56bb;
+                    // height: 14px;
+                    font-size: 14px;
+                    border-right: 1px solid #1d67dd;
+                    padding: 0 7px;
+                    position: relative;
 
-                .second-arrow,
+                    .arrow{
+                        display: inline-block;
+                        transition: all ease-out .1s;
+                        .arrow_down(3px, #fff);
+                        margin-left: 2px;
+                    }
+                    .second-arrow{
+                        display: none;
+                        position: absolute;
+                        top: 5px;
+                        left: 10px;
+                        .arrow_up(8px);
+                    }
+                }
+
                 .second-nav{
-                    display: block;
+                    display: none;
+                    width: 100%;
+                    height: 40px;
+                    border: 1px solid #2577e3;
+                    border-top: none;
+                    color: #333;
+                    background-color: #fff;
+                    position: absolute;
+                    left: 0;
+                    bottom: -40px;
+                    box-sizing: border-box;
+
+                    &-item{
+                        display: inline-block;
+                        height: 40px;
+                        line-height: 40px;
+
+                        .second-title{
+                            font-size: 14px;
+                            border-right: 1px solid #ccc;
+                            padding: 0 8px;
+
+                            &:hover{
+                                color: #2577e3;
+                                cursor: pointer;
+                            }
+                        }
+
+                        &:last-of-type{
+                            .second-title{
+                                border-right: none;
+                            }
+                        }
+                    }
+
+                    .second-skip-wrapper{
+                        height: 40px;
+                        line-height: 40px;
+                        position: absolute;
+                        top: 0;
+                        right: 18px;
+
+                        .skip-icon{
+                            #display_type > .dsp-middle;
+                            width: 16px;
+                            height: 16px;
+                            margin-right: 5px;
+                            background-image: url('http://pic.c-ctrip.com/platform/online/home/un_icon_index_type20170111.png');
+                            background-repeat: no-repeat;
+                        }
+
+                        .skip-title{
+                            #display_type > .dsp-middle;
+                            font-size: 14px;
+                        }
+                    }
                 }
 
-                .arrow{
-                    transform: rotate(180deg);
+                &:last-of-type{
+                    .title{
+                        border-right: none;
+                    }
                 }
-            }
+                &:hover{
+                    background-color: #0a56bb;
 
-        }
+                    .second-arrow,
+                    .second-nav{
+                        display: block;
+                    }
 
-        [data-type = '酒店']{
-            .second-nav{
-                padding-left: 16px;
-                .skip-icon{
-                    background-position: -26px 0;
+                    .arrow{
+                        transform: rotate(180deg);
+                    }
                 }
             }
-
-
-        }
-        [data-type = '旅游']{
-            .second-nav{
-                padding-left: 16px;
-                .skip-icon{
-                    background-position: 0 -26px;
-                }
-            }
-        }
-        [data-type = '机票']{
-            .second-nav{
-                padding-left: 16px;
-                .skip-icon{
-                    background-position: 0 0;
-                }
-            }
-        }
-        [data-type = '火车']{
-            .second-nav{
-                padding-left: 140px;
-                .skip-icon{
-                    background-position: -52px 0;
-                }
-            }
-        }
-        [data-type = '汽车票']{
-            .second-nav{
-                padding-left: 255px;
-                .skip-icon{
-                    background-position: -78px 0;
-                }
-            }
-        }
-        [data-type = '用车']{
-            .second-nav{
-                padding-left: 230px;
-                .skip-icon{
-                    width: 17px !important;
-                    background-position: -130px 0;
-                }
-            }
-        }
-        [data-type = '门票']{
-            .second-nav{
-                padding-left: 280px;
-                .skip-icon{
-                    background-position: -26px -26px;
-                }
-            }
-        }
-        [data-type = '团购']{
-            .second-nav{
-                padding-left: 350px;
-                .skip-icon{
-                    background-position: -130px -52px;
-                }
-            }
-        }
-        [data-type = '全球购']{
-            .second-nav{
-                padding-left: 455px;
-                .skip-icon{
-                    background-position: -24px -79px;
-                }
-            }
-        }
-        [data-type = '礼品卡']{
-            .second-nav{
-                padding-left: 480px;
-                .skip-icon{
-                    background-position: -78px -52px;
-                }
-            }
-        }
-        [data-type = '商旅']{
-            .second-nav{
-                padding-left: 600px;
-            }
-        }
-        [data-type = '更多']{
-            .second-nav{
-                padding-left: 800px;
-            }
-        }
-
-        //响应式
-        @media screen and (max-width: 1200px){
-            [data-type = '邮轮'],
-            [data-type = '天海邮轮'] {
-                display: none;
-            }
-        }
-
         .nav-info{
             width: 160px;
             height: 40px;

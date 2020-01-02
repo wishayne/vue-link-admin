@@ -16,7 +16,7 @@
                 class="lift-item"
                 :class="{'lift-active': (lift_index === lift_flag)}"
                 v-for="(lift,lift_index) in d"
-                @click="lift_click(lift_index)">
+                @click="liftClick(lift_index)">
                 <span class="skip">{{lift.name}}</span>
             </li>
         </ul>
@@ -25,141 +25,115 @@
 
 <script>
 
-import Lib from '@/assets/lib.js';
+import Lib from '@/assets/lib.js'
 
-//已有服务
-import service from "./service/service";
-//服务模式
-import servicePattern from "./servicePattern/service_pattern";
-//服务方案
-import solution from "./solution/solution";
-//需求模式
-import requirePattern from "./requirePattern/require_pattern";
+// 已有服务
+import service from './service/service'
+// 服务模式
+import servicePattern from './servicePattern/service_pattern'
+// 服务方案
+import solution from './solution/solution'
+// 需求模式
+import requirePattern from './requirePattern/require_pattern'
 
 export default {
-    name: 'cPd',
-    data(){
-        return {
+  name: 'cPd',
+  data() {
+    return {
+      // 滚动监控
+      scroll_data: [],
+      // 左边导航栏高度
+      lift_top: 0,
 
-            //滚动监控
-            scroll_data: [],
-            //左边导航栏高度
-            lift_top: 0,
+      d: [
+        { name: '已有服务', index: 'service' },
+        { name: '服务模式', index: 'sp' },
+        { name: '服务方案', index: 'solution' },
+        { name: '需求模式', index: 'rp' }
+      ],
+      lift_flag: 0,
 
-            d: [
-                {name: '已有服务',index: 'service'},
-                {name: '服务模式',index: 'sp'},
-                {name: '服务方案',index: 'solution'},
-                {name: '需求模式',index: 'rp'}
-            ],
-            lift_flag: 0,
+      // 激活标识
+      active_flag: 0
 
-            //激活标识
-            active_flag: 0
-
-        }
-    },
-    components: {
-        service,
-        servicePattern,
-        solution,
-        requirePattern
-    },
-    props: {
-        //滚动高度
-        scrollNum: {
-            type: Number,
-            default: 0
-        }
-    },
-    created(){
-
-    },
-    mounted(){
-        const s = document.getElementsByClassName('scroll-hook');
-        console.dir(s);
-
-
-        for(let dom of s){
-            let scoll_h = dom.offsetTop + dom.offsetParent.offsetTop;
-            this.scroll_data.push(scoll_h);
-        }
-
-        this.lift_top = this.scroll_data[0];
-
-    },
-    watch: {
-        scrollNum(val){
-
-            let inner_h = window.innerHeight;
-
-            let new_h = this.scroll_data[0] - val;
-            if(new_h > 200){
-                this.lift_top = new_h
-            }
-            else{
-                this.lift_top = 200;
-            }
-
-            //返回当前滚动标识
-            for(let i of this.scroll_data){
-                if((this.scrollNum + inner_h) < i){
-
-                    let num = this.scroll_data.indexOf(i);
-
-                    if(!num){
-                        this.active_flag = num;
-                    }
-                    else{
-                        this.active_flag = num - 1;
-                    }
-
-                    break;
-                }
-            }
-
-            //当滚动高度超过时
-            if((this.scrollNum + inner_h) > this.scroll_data[this.scroll_data.length - 1]){
-                this.active_flag = this.scroll_data.length;
-            }
-
-            //判断电梯高度
-            if(val<this.scroll_data[1]){
-                this.lift_flag = 0;
-            }
-            else if(val>=this.scroll_data[1] && val<this.scroll_data[2]){
-                this.lift_flag = 1;
-            }
-            else if(val>=this.scroll_data[2] && val<this.scroll_data[3]){
-                this.lift_flag = 2;
-            }
-            else if(val>=this.scroll_data[3] && val<this.scroll_data[4]){
-                this.lift_flag = 3;
-            }
-            else if(val>=this.scroll_data[4] && val<this.scroll_data[5]){
-                this.lift_flag = 4;
-            }
-            else if(val>=this.scroll_data[5] && val<this.scroll_data[6]){
-                this.lift_flag = 5;
-            }
-            else if(val>=this.scroll_data[6] && val<this.scroll_data[7]){
-                this.lift_flag = 6;
-            }
-            else if(val>=this.scroll_data[7]){
-                this.lift_flag = 7;
-            }
-
-        }
-    },
-    methods: {
-        lift_click(index){
-            this.lift_flag = index;
-            var cur_top = Lib.C.getScrollTop();
-            //滚动
-            Lib.C.page_scroll_to(cur_top, this.scroll_data[index]);
-
-        }
     }
+  },
+  components: {
+    service,
+    servicePattern,
+    solution,
+    requirePattern
+  },
+  props: {
+    // 滚动高度
+    scrollNum: {
+      type: Number,
+      default: 0
+    }
+  },
+  created() {
+
+  },
+  mounted() {
+    const s = document.getElementsByClassName('scroll-hook')
+
+    for (let dom of s) {
+      let scoll_h = dom.offsetTop + dom.offsetParent.offsetTop + 90
+      this.scroll_data.push(scoll_h)
+    }
+
+    this.lift_top = this.scroll_data[0]
+  },
+  watch: {
+    scrollNum(val) {
+      let inner_h = window.innerHeight
+
+      let new_h = this.scroll_data[0] - val
+      if (new_h > 200) {
+        this.lift_top = new_h
+      } else {
+        this.lift_top = 200
+      }
+
+      // 返回当前滚动标识
+      for (let i of this.scroll_data) {
+        if ((this.scrollNum + inner_h) < i) {
+          let num = this.scroll_data.indexOf(i);
+
+          if (!num) {
+            this.active_flag = num;
+          } else {
+            this.active_flag = num - 1;
+          }
+          break;
+        }
+      }
+
+      // 当滚动高度超过时
+      if ((this.scrollNum + inner_h) > this.scroll_data[this.scroll_data.length - 1]) {
+        this.active_flag = this.scroll_data.length
+      }
+
+      // 判断电梯高度
+      if (val < this.scroll_data[1]) {
+        this.lift_flag = 0
+      } else if (val >= this.scroll_data[1] && val < this.scroll_data[2]) {
+        this.lift_flag = 1
+      } else if (val >= this.scroll_data[2] && val < this.scroll_data[3]) {
+        this.lift_flag = 2
+      } else if (val >= this.scroll_data[3] && val < this.scroll_data[4]) {
+        this.lift_flag = 3
+      }
+    },
+  },
+  methods: {
+    liftClick(index) {
+      this.lift_flag = index
+      var cur_top = Lib.C.getScrollTop()
+      // 滚动
+      Lib.C.page_scroll_to(cur_top, this.scroll_data[index])
+    }
+  }
 }
 </script>
 
@@ -177,7 +151,7 @@ export default {
         position: fixed;
         top: 0;
         left: 50%;
-        margin-left: -650px;
+        margin-left: -670px;
         opacity: 1;
         transition: all linear .3s;
         .lift-item{
@@ -185,13 +159,6 @@ export default {
             height: 40px;
             line-height: 40px;
             text-align: center;
-            font-size: 0;
-            color: transparent;
-            cursor: pointer;
-            background-image: url('http://pic.c-ctrip.com/index/un_icon_leftnav.png');
-            background-repeat: no-repeat;
-            background-position-x: center;
-            margin-bottom: 1px;
 
             .skip{
                 font-size: 12px;

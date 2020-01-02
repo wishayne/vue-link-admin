@@ -16,7 +16,9 @@
               ref="table"
             ></Table>
             <div style="margin: 10px;overflow: hidden">
-              <Button @click="addRow()">增加</Button>
+              <Button
+                  v-permission="['/rest/service-pattern/addRow']"
+                  @click="addRow()">增加</Button>
 <!--
               <treeselect :multiple="true" :options="treeData" :open-on-click="true" :append-to-body="true"/>-->
               <div style="float: right;">
@@ -46,9 +48,11 @@
 </template>
 
 <script>
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
   export default {
       name: "table-main",
+      directives: { permission },
       data() {
       return {
         process_id: "",

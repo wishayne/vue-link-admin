@@ -26,7 +26,11 @@
           {{ handleTime(scope.row.info.timestamp) }}
         </template>
       </el-table-column>
-      <el-table-column align="center" width="100" label="操作">
+      <el-table-column
+              v-permission="['/rest/rps/modifyRp']"
+              align="center"
+              width="100"
+              label="操作">
         <template slot-scope="scope">
           <el-button type="text" @click="modifyRpDialog(scope)">修改</el-button>
         </template>
@@ -66,6 +70,7 @@
       @click="mineRP"
     />
     <el-button
+      v-permission="['/rest/rps/addRp']"
       type="primary"
       icon="el-icon-plus"
       circle
@@ -97,6 +102,7 @@
 </template>
 
 <script>
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import { handleTime } from '../all-requires/util'
 import { getRestrictString } from '../all-requires/restrict-options'
 import TreeTable from '../component/TreeTable'
@@ -104,6 +110,7 @@ import TreeTable from '../component/TreeTable'
 export default {
   name: 'AllRP',
   components: { TreeTable },
+  directives: { permission },
   data() {
     return {
       data: [],

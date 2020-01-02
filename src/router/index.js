@@ -6,8 +6,13 @@ Vue.use(Router)
 /* Layout */
 import Layout from '@/layout'
 
-import ctriplikely from "@/layout/ctriplikely";
+import ctriplikely from '@/layout/ctriplikely'
+import requiresRouter from './newModules/require'
+import serviceManageRouter from './newModules/service-mange'
+import servicePatternRouter from './newModules/service-pattern'
+import solutionRouter from './newModules/service-solution'
 import Home from '@/views/home/home'
+import permissionRouter from './newModules/permission';
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -70,103 +75,23 @@ export const constantRoutes = [
     component: ctriplikely,
     redirect: '/home',
     name: 'home1',
+    hidden: true,
+    title: '首页',
     children: [
       {
         path: '/home',
         name: 'home2',
-        component: Home
-      },
-      ////////////////////////////
-      {
-        path: '/service-mange/add-service/',
-        component: () => import('@/views/service-mange/add-service/'),
-        name: 'add-service'
-      },
-      {
-        path: '/service-mange/list-service/',
-        component: () => import('@/views/service-mange/list-service/'),
-        name: 'list-service'
-      },
-      {
-        path: '/service-mange/list-service/list-api',
-        component: () => import('@/views/service-mange/list-service/list-api'),
-        name: 'list-api'
-      },
-      {
-        path: '/service-mange/service-category/',
-        component: () => import('@/views/service-mange/service-category/'),
-        name: 'service-category'
-      },
-      {
-        path: '/service-mange/service-provider/',
-        component: () => import('@/views/service-mange/service-provider/'),
-        name: 'service-provider'
-      },
-      ///////////////////////////
-      {
-        path: '/service-pattern/rpsp',
-        component: () => import('@/views/service-pattern/rpsp'),
-        name: 'rpsp'
-      },
-      {
-        path: '/service-pattern/TableMain',
-        component: () => import('@/views/service-pattern/TableMain'),
-        name: 'sp'
-      },
-      ///////////////////////////
-      {
-        path: '/service-solution/list-solution',
-        component: () => import('@/views/service-solution/list-solution'),
-        name: 'list-solution'
-      },
-      {
-        path: '/service-solution/list-by-user',
-        component: () => import('@/views/service-solution/list-by-user'),
-        name: 'list-by-user'
-      },
-      {
-        path: '/service-solution/list-by-creator',
-        component: () => import('@/views/service-solution/list-by-creator'),
-        name: 'list-by-creator'
-      },
-      ///////////////////////////
-      {
-        path: '/requires/all-requires/index',
-        component: () => import('@/views/requires/all-requires/index'),
-        name: 'all-requires',
+        component: Home,
         meta: {
-          title: '需求维护', noCache: true
+          title: '首页', noCache: true
         }
-      },
-      {
-        path: '/requires/all-rps/index',
-        component: () => import('@/views/requires/all-rps/index'),
-        name: 'all-rps',
-        meta: {
-          title: '需求模式维护', noCache: true
-        }
-      },
-      {
-        path: '/requires/add-require/index',
-        component: () => import('@/views/requires/add-require/index'),
-        name: 'add-require',
-        meta: {
-          title: '新增需求', noCache: true
-        },
-        hidden: true
-      },
-      {
-        path: '/requires/add-rp/index',
-        component: () => import('@/views/requires/add-rp/index'),
-        name: 'add-rp',
-        meta: {
-          title: '新增需求模式', noCache: true
-        },
-        hidden: true
-      },
-      ///////////////////////////
+      }
     ]
   },
+
+  /** ***********************/
+
+  /** ***********************/
 
   {
     path: '/profile',
@@ -189,10 +114,12 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
-  {
-    path: 'https://github.com/252956/vue-link-admin',
-    meta: {title: '外链', icon: 'link'}
-  },
+  requiresRouter,
+  serviceManageRouter,
+  servicePatternRouter,
+  solutionRouter,
+  permissionRouter,
+
   // 404 page must be placed at the end !!!
   {path: '*', redirect: '/404', hidden: true}
 ]

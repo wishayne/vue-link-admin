@@ -98,9 +98,15 @@
           width="120"
         >
           <template slot-scope="scope">
-            <el-button v-if="scope.row.state=='INITIALIZATION'" type="text" @click="matchSp(scope)">生成服务方案</el-button>
-            <el-button v-if="scope.row.state=='EDITING'" type="text" @click="openUrl(scope.row.operationUrl)">修改服务方案</el-button>
-            <el-button v-if="scope.row.state=='CREATED'" type="text" @click="execute(scope.row.operationUrl)">启动服务方案</el-button>
+            <el-button
+                    v-permission="['/rest/solution/generateSolution']"
+                    v-if="scope.row.state=='INITIALIZATION'" type="text" @click="matchSp(scope)">生成服务方案</el-button>
+            <el-button
+                    v-permission="['/rest/solution/modifySolution']"
+                    v-if="scope.row.state=='EDITING'" type="text" @click="openUrl(scope.row.operationUrl)">修改服务方案</el-button>
+            <el-button
+                    v-permission="['/rest/solution/executeSolution']"
+                    v-if="scope.row.state=='CREATED'" type="text" @click="execute(scope.row.operationUrl)">启动服务方案</el-button>
             <el-button v-if="scope.row.state=='CREATED'||scope.row.state=='RUNNING'||scope.row.state=='FINISH'" type="text" @click="openUrl(scope.row.operationUrl)">查看服务方案</el-button>
           </template>
         </el-table-column>
@@ -120,9 +126,13 @@ import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import request from '@/utils/request2'
 import baseUrl from '../../requires/all-requires/api'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 export default {
   components: {
     Pagination
+  },
+  directives: {
+    permission
   },
   filters: {
     formatDate: function(value) {

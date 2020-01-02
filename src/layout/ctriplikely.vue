@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <my-header></my-header>
+  <div>
+<!--    <my-header></my-header>-->
     <my-nav></my-nav>
     <div class="product-detail-wrapper">
         <div class="content-wrapper">
@@ -12,13 +12,11 @@
 
 <script>
 
-import myHeader from '@/components/CtripLikely/header/MyHeader'
 import myNav from '@/components/CtripLikely/nav/MyNav'
 
 export default {
   name: 'ctriplikely',
   components: {
-    myHeader,
     myNav
   }
 };
