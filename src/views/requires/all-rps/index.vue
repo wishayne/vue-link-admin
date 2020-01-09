@@ -66,13 +66,6 @@
 
     <br>
     <el-button
-      tyep="success"
-      icon="el-icon-refresh"
-      circle
-      class="rp-miner"
-      @click="mineRP"
-    />
-    <el-button
       type="primary"
       icon="el-icon-plus"
       circle
@@ -104,11 +97,11 @@
 </template>
 
 <script>
-import { handleTime } from '../all-requires/util'
-import { getRestrictString } from '../all-requires/restrict-options'
-import TreeTable from '../component/TreeTable'
+  import {handleTime} from '../all-requires/util'
+  import {getRestrictString} from '../all-requires/restrict-options'
+  import TreeTable from '../component/TreeTable'
 
-export default {
+  export default {
   name: 'AllRP',
   components: { TreeTable },
   data() {
@@ -193,8 +186,7 @@ export default {
       return parent
     },
     modifyRpDialog(scope) {
-      const rpId = scope.row.info.rpId
-      this.selectRPId = rpId
+      this.selectRPId = scope.row.info.rpId
       this.requirePattern = scope.row.data
       this.info.name = scope.row.info.name
       this.info.description = scope.row.info.description
@@ -223,17 +215,7 @@ export default {
         this.getAllRPs()
       })
     },
-    handleTime: handleTime,
-    mineRP() {
-      this.$ajax.get(`${process.env.VUE_APP_RP_MINER_BASE_URL}/api/rp-miner`).then(res => {
-        this.selectedRP = {
-          data: res.data,
-          info: {
-            name: '新挖掘的需求模式'
-          }
-        }
-      })
-    }
+    handleTime: handleTime
   }
 }
 </script>
@@ -274,9 +256,5 @@ export default {
     .add-rp
       position fixed
       right 5%
-      bottom 10%
-    .rp-miner
-      position fixed
-      right 8%
       bottom 10%
 </style>
