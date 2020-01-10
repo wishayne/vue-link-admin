@@ -370,6 +370,8 @@ export default {
             this.$set(item, 'rpInfo', map[item.goal.goalId])
           }
         })
+      }).catch(_ => {
+        this.$message.error('出现错误')
       })
     },
     hiddenMatchRp(scope) {
