@@ -23,9 +23,7 @@ const rpRequireMap = function(result) {
 const ergodicGoals = function(goals, handle) {
   const ergodicGoal = goal => {
     handle(goal)
-    for (let i = 0; i < goal.children.length; i++) {
-      handle(goal.children[i])
-    }
+    ergodicGoals(goal.children, handle)
   }
   for (let i = 0; i < goals.length; i++) {
     ergodicGoal(goals[i])
@@ -36,5 +34,9 @@ const calcColor = function(s) {
   return '#' + sMd5.slice(0, 6)
 }
 
-export { handleTime, rpRequireMap, ergodicGoals, calcColor }
+const optimizationOpt = [
+  '人工蜂群算法', '遗传算法', '差分进化算法'
+]
+
+export { handleTime, rpRequireMap, ergodicGoals, calcColor, optimizationOpt }
 
