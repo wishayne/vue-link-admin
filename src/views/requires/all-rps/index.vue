@@ -27,12 +27,14 @@
         </template>
       </el-table-column>
       <el-table-column
-              v-permission="['/rest/rps/modifyRp']"
               align="center"
               width="100"
               label="操作">
         <template slot-scope="scope">
-          <el-button type="text" @click="modifyRpDialog(scope)">修改</el-button>
+          <el-button type="text">查看</el-button>
+          <el-button
+                  v-permission="['/rest/rps/modifyRp']"
+                  type="text" @click="modifyRpDialog(scope)">修改</el-button>
         </template>
       </el-table-column>
     </el-table>

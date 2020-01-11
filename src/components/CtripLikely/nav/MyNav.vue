@@ -16,24 +16,16 @@
 
             <ul class="nav-info">
                 <li class="nav-status">
-                    <i class="nav-icon"></i>
-                    <span class="nav-login">登录</span>
-                    <span class="nav-register">注册</span>
-                    <span class="nav-register" @click="logout">退出</span>
+                    <span v-if="!logined" class="nav-login" @click="login">登录</span>
+                    <span v-if="logined" class="nav-login">{{ username }}</span>
+                    <span v-if="logined" class="nav-register" @click="logout">退出</span>
                 </li>
-                <li class="nav-my">我的<i class="nav-info-arrow"></i></li>
-
-                <div class="nav-info-detail">
-                    <button class="nav-login-btn" @click="login">登录</button>
-                    <p class="nav-detail-title">全部需求</p>
-                </div>
             </ul>
         </ul>
     </nav>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import navItem from './NavItem'
 
 export default {
@@ -41,10 +33,7 @@ export default {
     navItem
   },
   computed: {
-    ...mapGetters([
-      'permission_routes',
-      'sidebar'
-    ])
+
   },
   data() {
     return {
@@ -52,19 +41,29 @@ export default {
         name: '首页',
         target: '/home'
       },
-      nav: true
+      nav: true,
+      permission_routes: [],
+      logined: false,
+      username: ''
     }
+  },
+  created() {
+    const getters = this.$store.getters
+    this.permission_routes = getters.permission_routes
+    this.logined = getters.token
+    this.username = getters.userinfo.vserName
   },
   methods: {
     changeNav(target){
       this.$router.push(target)
     },
     login(){
-      this.$router.push('/login');
+      this.$router.push('/login')
     },
     async logout() {
       await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+      this.$router.push('/')
+      window.location.reload()
     }
   }
 }
@@ -76,7 +75,7 @@ export default {
     .nav-wrapper{
         background-color: #2577e3;
         width: 100%;
-        height: 40px;
+        height: 45px;
 
         .content-wrapper{
             z-index: 9;
@@ -84,16 +83,16 @@ export default {
 
         .nav-item{
             display: inline-block;
-            height: 40px;
-            line-height: 40px;
+            height: 45px;
+            line-height: 45px;
             color: #fff;
             cursor: pointer;
 
                 .title{
                     // height: 14px;
-                    font-size: 14px;
+                    font-size: 16px;
                     border-right: 1px solid #1d67dd;
-                    padding: 0 7px;
+                    padding: 2px 7px;
                     position: relative;
 
                     .arrow{
@@ -114,23 +113,23 @@ export default {
                 .second-nav{
                     display: none;
                     width: 100%;
-                    height: 40px;
+                    height: 45px;
                     border: 1px solid #2577e3;
                     border-top: none;
                     color: #333;
                     background-color: #fff;
                     position: absolute;
                     left: 0;
-                    bottom: -40px;
+                    bottom: -45px;
                     box-sizing: border-box;
 
                     &-item{
                         display: inline-block;
-                        height: 40px;
+                        height: 45px;
                         line-height: 40px;
 
                         .second-title{
-                            font-size: 14px;
+                            font-size: 16px;
                             border-right: 1px solid #ccc;
                             padding: 0 8px;
 
@@ -189,112 +188,24 @@ export default {
                 }
             }
         .nav-info{
-            width: 160px;
-            height: 40px;
-            background-color: #ff9913;
             position: absolute;
-            top: 0;
+            top: 7px;
             right: 0;
             padding: 5px 8px;
             box-sizing: border-box;
             .nav-status{
                 margin-bottom: 2px;
-                .nav-icon{
-                    #display_type > .dsp-middle;
-                    width: 12px;
-                    height: 15px;
-                    background-image: url('http://pic.c-ctrip.com/platform/online/home/un_header_footer20160610.png');
-                    background-repeat:  no-repeat;
-                    background-position:  -68px -183px;
-                }
                 .nav-login,
                 .nav-register{
                     #display_type > .dsp-middle;
                     color: #fff;
-                    font-size: 12px;
-                    padding: 0 5px;
-
-                    &:hover{
-                        text-decoration: underline;
-                        cursor: pointer;
-                    }
-                }
-                .nav-login{
-                    border-right: 2px solid #fff;
-                }
-            }
-            .nav-my{
-                display: inline-block;
-                color: #fff;
-                font-size: 14px;
-                .nav-info-arrow{
-                    display: inline-block;
-                    .arrow_down(4px, #fff);
-                }
-                &:hover{
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-            }
-
-            .nav-info-detail{
-                display: none;
-                width: 160px;
-                height: 100px;
-                background-color: #fff;
-                padding: 8px 14px;
-                position: absolute;
-                left: 0;
-                top: 40px;
-                box-sizing: border-box;
-                border: 1px solid #c3c3c3;
-                border-top: none;
-                box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
-
-                .nav-login-btn{
-                    width: 100%;
-                    height: 35px;
-                    line-height: 33px;
-                    background-color: #ffba14;
-                    border-radius: 3px;
-                    border: 1px solid #d5790a;
-                    padding: 0;
-                    outline: none;
-                    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
                     font-size: 16px;
-                    text-align: center;
-                    font-weight: bold;
-                    color: #fff;
-                    text-shadow: 1px 1px 0 #e57c00;
-                    margin-bottom: 3px;
-
-                    &:hover{
-                        cursor: pointer;
-                        background-color: #ff9914;
-                        box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 0 5px #fb0 inset;
-                    }
-
-                }
-
-                .nav-detail-title{
+                    padding: 0 5px;
                     cursor: pointer;
-                    font-size: 12px;
-                    color: #06c;
-                    padding: 3px 0;
-                    margin: 5px 0;
 
-                    &:hover{
-                        text-decoration: underline;
-                    }
                 }
-            }
-
-            &:hover{
-                .nav-info-arrow{
-                    transform: rotate(180deg);
-                }
-                .nav-info-detail{
-                    display: block;
+                .nav-register{
+                    border-left: 2px solid #fff;
                 }
             }
         }

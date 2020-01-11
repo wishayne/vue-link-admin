@@ -18,15 +18,6 @@ const spRouter = {
       }
     },
     {
-      path: '/service-pattern/TableMain',
-      component: () => import('@/views/service-pattern/TableMain'),
-      name: 'sp',
-      meta: {
-        title: '服务模式维护',
-        noCache: true
-      }
-    },
-    {
       path: '/service-pattern/list-domain-inner',
       component: () => import('@/views/service-pattern/list-domain-inner'),
       name: 'list-domain-inner',

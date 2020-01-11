@@ -3,7 +3,7 @@
         <p class="ticket-product-name">
             {{serviceDetail.serviceName}}
         </p>
-        <p class="ticket-product-date">{{serviceDetail.serviceType}}</p>
+        <p class="ticket-product-date">{{serviceDetail.feature.name}}</p>
         <div class="ticket-product-info">
             <div class="price">
                 <p class="ticket-product-name">
@@ -47,8 +47,8 @@ export default {
     @import '~@/styles/less/common.less';
 
     .ticket-product{
-        width: 194px;
-        height: 74px;
+        width: 230px;
+        height: 115px;
         padding: 15px 12px;
         background: #f8f8f8;
         border: 1px solid #f8f8f8;
@@ -62,7 +62,7 @@ export default {
         &-date{
             height: 20px;
             line-height: 20px;
-            font-size: 12px;
+            font-size: 15px;
             padding: 0 5px;
             box-sizing: border-box;
         }

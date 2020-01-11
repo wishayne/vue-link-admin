@@ -19,7 +19,6 @@
 
 <script>
 
-import mock_data from '@/assets/js/mock.js';
 //内容盒子
 import detailContainer from '../detail/detail-container'
 //lazyload模块
@@ -36,7 +35,8 @@ export default {
         return {
             nav: [],
             sp_nav: [
-                {catelogyName: ''}
+                {catelogyName: '组织内服务模式'},
+                {catelogyName: '领域内服务模式'}
             ],
             sp_list: [],
             loading_flag: true
@@ -65,21 +65,9 @@ export default {
         }
     },
     created(){
-        this.getFields();
+        // remind 服务模式数据获取
     },
     methods: {
-        getFields(){
-            this.$ajax.get('http://service-registry-linan.192.168.42.159.nip.io/serviceCategory/listRoots').then(data => {
-                this.sp_nav = data.data;
-                return data.data;
-            }).then(sp_nav => {
-                this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{
-                    spField:sp_nav[0].catelogyName
-                }).then(res =>{
-                    this.sp_list = res.data;
-                })
-            })
-        },
 
         domainSearch(name){
             this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspbyall",{

@@ -49,15 +49,13 @@ export default {
 
     .product-group-nav{
         width: 100%;
-        height: 36px;
         border-bottom: 2px solid #3983e5;
 
         &-item{
             display: inline-block;
             position: relative;
-            height: 36px;
             line-height: 36px;
-            font-size: 16px;
+            font-size: 18px;
             margin-right: 30px;
             color: #333;
             cursor: pointer;

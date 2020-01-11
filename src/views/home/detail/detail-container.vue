@@ -13,10 +13,6 @@
                 </template>
             </div>
             <div class="product-right-wrapper">
-                <inner-nav
-                    :nav-data="containerData.inner_nav"
-                    :nav-more="containerData.inner_nav_more ? containerData.inner_nav_more : '' "
-                    @selectIndex="inner_nav_select"></inner-nav>
                 <div class="right-content">
                     <div class="store-detail-wrapper">
                         <slot name="store"></slot>
@@ -100,7 +96,7 @@ export default {
             background-color: #fff;
 
             .product-left-wrapper{
-                flex: 0 0 187px;
+                flex: 0 0 400px;
                 padding: 0 20px;
                 border-right: 1px dotted #a3a3a3;
 

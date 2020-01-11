@@ -11,7 +11,10 @@ const state = {
 const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
-    state.routes = constantRoutes.concat(routes)
+    state.routes = routes
+  },
+  ORIGINAL_ROUTE: (state, routes) => {
+    state.routes = routes
   }
 }
 
@@ -20,10 +23,61 @@ const actions = {
     return new Promise(resolve => {
       var accessedRoutes = deepClone(asyncRoutes)
       accessedRoutes = filterAsyncRoutes(accessedRoutes)
-      commit('SET_ROUTES', accessedRoutes)
+      commit('SET_ROUTES', concatRoutes(accessedRoutes))
       resolve(accessedRoutes)
     })
+  },
+  originalRoutes({ commit }) {
+    commit('ORIGINAL_ROUTE', deepClone(constantRoutes))
   }
+}
+
+function concatRoutes(routes){
+  var newRoutes = deepClone(constantRoutes)
+  for (var tempRoute of newRoutes) {
+    switch (tempRoute.name) {
+      case 'service-mange' :
+        for (const tempRoute2 of routes) {
+          if (tempRoute2.name === 'service-mange'){
+            tempRoute.children = tempRoute.children.concat(tempRoute2.children)
+            break
+          }
+        }
+        break
+      case 'spManagement' :
+        for (const tempRoute2 of routes) {
+          if (tempRoute2.name === 'spManagement'){
+            tempRoute.children = tempRoute.children.concat(tempRoute2.children)
+            break
+          }
+        }
+        break
+      case 'service-solution' :
+        for (const tempRoute2 of routes) {
+          if (tempRoute2.name === 'service-solution'){
+            tempRoute.children = tempRoute.children.concat(tempRoute2.children)
+            break
+          }
+        }
+        break
+      case 'require' :
+        for (const tempRoute2 of routes) {
+          if (tempRoute2.name === 'require'){
+            tempRoute.children = tempRoute.children.concat(tempRoute2.children)
+            break
+          }
+        }
+        break
+      default:
+    }
+  }
+  for (const tempRoute2 of routes) {
+    if (tempRoute2.name === 'PermissionManagement'){
+      newRoutes.push(tempRoute2)
+      break
+    }
+  }
+  return newRoutes
 }
 
 /**

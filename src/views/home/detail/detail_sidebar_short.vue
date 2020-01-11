@@ -47,13 +47,13 @@ export default {
     @import '~@/styles/less/common.less';
 
     .entrance-group{
-        width: 187px;
+        width: 400px;
         margin-bottom: 7px;
         overflow: hidden;
 
         &-title{
             width: 100%;
-            height: 38px;
+            height: 10px;
             line-height: 38px;
             font-size: 14px;
             font-weight: 700;
@@ -68,7 +68,7 @@ export default {
                 line-height: 18px;
                 height: 18px;
                 margin: 7px 0;
-                font-size: 12px;
+                font-size: 15px;
                 color: #666;
                 border-left: 1px solid #ececec;
                 display: inline-block;

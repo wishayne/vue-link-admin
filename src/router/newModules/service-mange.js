@@ -15,14 +15,6 @@ const serviceManageRouter = {
       }
     },
     {
-      path: '/service-mange/list-service/',
-      component: () => import('@/views/service-mange/list-service/'),
-      name: 'list-service',
-      meta: {
-        title: '服务检索', noCache: true
-      }
-    },
-    {
       path: '/service-mange/list-service/list-api',
       component: () => import('@/views/service-mange/list-service/list-api'),
       name: 'list-api',

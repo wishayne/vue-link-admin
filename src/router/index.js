@@ -90,7 +90,71 @@ export const constantRoutes = [
   },
 
   /** ***********************/
-
+  {
+    path: '/service-mange',
+    component: ctriplikely,
+    name: 'service-mange',
+    title: '已有服务',
+    children: [
+      {
+        path: '/service-mange/list-service/',
+        component: () => import('@/views/service-mange/list-service/'),
+        name: 'list-service',
+        meta: {
+          title: '服务检索', noCache: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/sp',
+    component: ctriplikely,
+    name: 'spManagement',
+    title: '服务模式',
+    children: [
+      {
+        path: '/service-pattern/TableMain',
+        component: () => import('@/views/service-pattern/TableMain'),
+        name: 'sp',
+        meta: {
+          title: '服务模式维护',
+          noCache: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/service-solution',
+    component: ctriplikely,
+    name: 'service-solution',
+    title: '服务方案管理',
+    children: [
+      {
+        path: '/service-solution/list-solution',
+        component: () => import('@/views/service-solution/list-solution'),
+        name: 'list-solution',
+        meta: {
+          title: '查询服务方案', noCache: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/requires',
+    component: ctriplikely,
+    name: 'require',
+    title: '需求模式',
+    children: [
+      {
+        path: '/requires/all-rps/index',
+        component: () => import('@/views/requires/all-rps/index'),
+        name: 'all-rps',
+        meta: {
+          title: '需求模式维护', noCache: true
+        }
+      }
+    ]
+  },
   /** ***********************/
 
   {

@@ -17,14 +17,6 @@ const requireRouter = {
       }
     },
     {
-      path: '/requires/all-rps/index',
-      component: () => import('@/views/requires/all-rps/index'),
-      name: 'all-rps',
-      meta: {
-        title: '需求模式维护', noCache: true
-      }
-    },
-    {
       path: '/requires/add-require/index',
       component: () => import('@/views/requires/add-require/index'),
       name: 'add-require',
