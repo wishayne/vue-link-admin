@@ -6,7 +6,16 @@
         <template slot-scope="{row}">
           <p :style="`margin-left: ${row.__level * 15}px;margin-top:0;margin-bottom:0`">
             <i class="permission_toggleFold" :class="toggleFoldingClass(row)" @click="toggleFoldingStatus(row)" />
-            <el-input v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
+            <el-autocomplete
+              v-if="isTree"
+              size="mini"
+              v-model="row.goal.content"
+              @focus="getParentGoal(row)"
+              :fetch-suggestions="reqRecommend"
+              placeholder="请输入"
+              @select="handleReqSelect"
+            />
+            <el-input v-else v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
           </p>
         </template>
       </el-table-column>
@@ -167,6 +176,8 @@ export default {
         children: []
       },
       id: 1,
+      //TODO 改成currentGoal
+      goal:{},
       goalRestricts: [],
       goalRestrictsOld: [],
       goalBrother: [],
@@ -189,7 +200,7 @@ export default {
       ],
       targetVisible: false,
       goalOptTargets: [],
-      targetOption: targetOption
+      targetOption: targetOption,
 
       //    TODO 把options移动到单独的文件中
     }
@@ -197,7 +208,7 @@ export default {
   computed: {
     tableListData: function() {
       return this.formatConversion([], this.data)
-    }
+    },
   },
   mounted() {
   },
@@ -358,6 +369,30 @@ export default {
         item.weight = item.weight / sum
       })
       this.goal.optTargets = this.goalOptTargets
+    },
+    getParentGoal(goal){
+      if (typeof goal.__family === 'undefined' || goal.__family.length === 0) {
+        this.goal = {
+          content:""
+        }
+      } else {
+        const identity = goal.__family[goal.__family.length - 1]
+        const index = this.tableListData.findIndex(d => d.__identity === identity)
+        this.goal = this.tableListData[index].goal
+      }
+    },
+    reqRecommend(queryString, cb) {
+      const parentReq = this.goal.content;
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/req-recommend?parentReq=${parentReq}`).then(res => {
+        cb(res.data.map(item => ({
+          value:item
+        })));
+      }).catch(_ => {
+        cb([{value: '网络错误'}])
+      });
+    },
+    handleReqSelect() {
+
     }
   }
 }
