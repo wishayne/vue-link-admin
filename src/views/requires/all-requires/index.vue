@@ -40,6 +40,9 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
+          <el-tag v-for="(target, index) in scope.row.goal.optTargets" :key="index" size="mini" type="info" effect="dark">
+            {{ target.name + ':' + target.weight }}
+          </el-tag>
           <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
           </el-tag>

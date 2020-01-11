@@ -13,6 +13,11 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
+          <span v-if="isTree">
+            <el-tag v-for="(target, index) in scope.row.goal.optTargets" :key="index" size="mini" type="info">
+              {{ target.name + ':' + target.weight }}
+            </el-tag>
+          </span>
           <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
           </el-tag>
@@ -24,6 +29,7 @@
           <el-button type="text" @click="handleAdd(scope)">增加</el-button>
           <el-button type="text" @click="handleDelete(scope)">删除</el-button>
           <el-button type="text" @click="showDialog(scope)">编辑约束</el-button>
+          <el-button v-if="isTree" type="text" @click="showTargetDialog(scope)">编辑目标</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -89,6 +95,37 @@
       <br>
       <!--                        {{goalRestricts}}-->
     </el-dialog>
+    <el-dialog :styles="{width:'40%'}" :visible.sync="targetVisible" title="编辑优化目标" :before-close="closeDialog">
+      <el-table :data="goalOptTargets">
+        <el-table-column align="center" label="优化目标">
+          <template slot-scope="{row}">
+            <el-select v-model="row.name" placeholder="请选择" size="small">
+              <el-option
+                v-for="(item, index) in targetOption"
+                :key="index"
+                :value="item"
+                :label="item"
+              />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="权重">
+          <template slot-scope="{row}">
+            <el-input v-model="row.weight" size="mini" />
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="操作">
+          <template slot-scope="{row}">
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delOptTarget(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <br>
+      <el-row>
+        <el-button type="primary" size="mini" @click="addOptTarget()">增加优化目标</el-button>
+        <el-button type="success" size="mini" @click="handleOptTargetConfirm()">确定</el-button>
+      </el-row>
+    </el-dialog>
     <br>
     <!--        {{data}}-->
     <br>
@@ -104,7 +141,9 @@
 
 <script>
 let restrictNum = 0
+let optNum = 0
 import { getRestrictString } from '../all-requires/restrict-options'
+import { targetOption } from './data'
 
 export default {
   name: 'TreeTable',
@@ -122,7 +161,8 @@ export default {
           content: 'goal',
           // TODO requireId为了解决matching中的data.goal.requireId warning，本身没有意义
           requireId: 0,
-          restricts: []
+          restricts: [],
+          optTargets: []
         },
         children: []
       },
@@ -146,7 +186,11 @@ export default {
           value: 'service-provider',
           label: '服务提供者'
         }
-      ]
+      ],
+      targetVisible: false,
+      goalOptTargets: [],
+      targetOption: targetOption
+
       //    TODO 把options移动到单独的文件中
     }
   },
@@ -285,6 +329,35 @@ export default {
       }).then(_ => {
         done()
       }).catch(_ => {})
+    },
+    showTargetDialog(scope) {
+      const node = scope.row
+      this.goal = node.goal
+      this.goalOptTargets = JSON.parse(JSON.stringify(node.goal.optTargets))
+      this.targetVisible = true
+    },
+    addOptTarget() {
+      optNum += 1
+      this.goalOptTargets.push({
+        id: optNum,
+        name: '',
+        weight: 0
+      })
+    },
+    delOptTarget(row) {
+      const index = this.goalOptTargets.findIndex(d => d.id === row.id)
+      this.goalOptTargets.splice(index, 1)
+    },
+    handleOptTargetConfirm() {
+      this.targetVisible = false
+      let sum = 0
+      this.goalOptTargets.forEach(item => {
+        sum += item.weight
+      })
+      this.goalOptTargets.forEach(item => {
+        item.weight = item.weight / sum
+      })
+      this.goal.optTargets = this.goalOptTargets
     }
   }
 }
