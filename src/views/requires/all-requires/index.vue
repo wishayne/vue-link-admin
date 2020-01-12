@@ -293,6 +293,7 @@ export default {
         response.data.requireRootName = scope.row.goal.content
         const result = response.data
         result.solutionId = scope.row.id
+        result.requireId = requireId
         this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
           this.loading = false
           this.visible = true

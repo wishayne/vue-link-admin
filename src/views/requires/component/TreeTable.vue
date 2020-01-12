@@ -372,12 +372,12 @@ export default {
     },
     handleOptTargetConfirm() {
       this.targetVisible = false
-      let sum = 0
+      let sum = 0.0
       this.goalOptTargets.forEach(item => {
-        sum += item.weight
+        sum += parseFloat(item.weight)
       })
       this.goalOptTargets.forEach(item => {
-        item.weight = item.weight / sum
+        item.weight = parseFloat(item.weight) / sum
       })
       this.goal.optTargets = this.goalOptTargets
     },
@@ -443,6 +443,7 @@ export default {
       row.minValue = res.minValue
       row.maxValue = res.maxValue
       row.value = res.value
+      row.unit = res.unit
     }
   }
 }
