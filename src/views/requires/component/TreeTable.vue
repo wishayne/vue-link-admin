@@ -8,12 +8,11 @@
             <i class="permission_toggleFold" :class="toggleFoldingClass(row)" @click="toggleFoldingStatus(row)" />
             <el-autocomplete
               v-if="isTree"
-              size="mini"
               v-model="row.goal.content"
-              @focus="getParentGoal(row)"
+              size="mini"
               :fetch-suggestions="reqRecommend"
               placeholder="请输入"
-              @select="handleReqSelect"
+              @focus="getParentGoal(row)"
             />
             <el-input v-else v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
           </p>
@@ -52,7 +51,15 @@
       <el-table :data="goalRestricts" class="restricts_table">
         <el-table-column align="center" label="约束名">
           <template slot-scope="{row}">
-            <el-input v-model="row.key" type="text" :placeholder="row.key" size="small" />
+            <el-autocomplete
+              v-if="isTree"
+              v-model="row.key"
+              size="mini"
+              :fetch-suggestions="resRecommend"
+              placeholder="请输入"
+              @select="item => {handleResSelect(item, row)}"
+            />
+            <el-input v-else v-model="row.key" type="text" :placeholder="row.key" size="small" />
           </template>
         </el-table-column>
         <el-table-column align="center" label="约束类型">
@@ -176,8 +183,8 @@ export default {
         children: []
       },
       id: 1,
-      //TODO 改成currentGoal
-      goal:{},
+      // TODO 改成currentGoal
+      goal: {},
       goalRestricts: [],
       goalRestrictsOld: [],
       goalBrother: [],
@@ -200,7 +207,7 @@ export default {
       ],
       targetVisible: false,
       goalOptTargets: [],
-      targetOption: targetOption,
+      targetOption: targetOption
 
       //    TODO 把options移动到单独的文件中
     }
@@ -208,7 +215,7 @@ export default {
   computed: {
     tableListData: function() {
       return this.formatConversion([], this.data)
-    },
+    }
   },
   mounted() {
   },
@@ -370,10 +377,10 @@ export default {
       })
       this.goal.optTargets = this.goalOptTargets
     },
-    getParentGoal(goal){
+    getParentGoal(goal) {
       if (typeof goal.__family === 'undefined' || goal.__family.length === 0) {
         this.goal = {
-          content:""
+          content: ''
         }
       } else {
         const identity = goal.__family[goal.__family.length - 1]
@@ -382,17 +389,34 @@ export default {
       }
     },
     reqRecommend(queryString, cb) {
-      const parentReq = this.goal.content;
+      const parentReq = this.goal.content
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/req-recommend?parentReq=${parentReq}`).then(res => {
         cb(res.data.map(item => ({
-          value:item
-        })));
+          value: item
+        })))
       }).catch(_ => {
-        cb([{value: '网络错误'}])
-      });
+        cb([{ value: '网络错误' }])
+      })
     },
-    handleReqSelect() {
-
+    resRecommend(queryString, cb) {
+      const req = this.goal.content
+      console.log(req)
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/res-recommend?req=${req}`).then(res => {
+        cb(res.data.map(item => ({
+          value: this.getRestrictString(item),
+          res: item
+        })))
+      }).catch(_ => {
+        cb([{ value: '网络错误' }])
+      })
+    },
+    handleResSelect(item, row) {
+      const res = item.res
+      row.key = res.key
+      row.valueType = res.valueType
+      row.minValue = res.minValue
+      row.maxValue = res.maxValue
+      row.value = res.value
     }
   }
 }
