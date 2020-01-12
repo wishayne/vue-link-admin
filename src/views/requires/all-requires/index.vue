@@ -135,8 +135,12 @@
     <el-dialog
       :visible.sync="visible"
       :fullscreen="true"
-      :before-close="handleClose"
     >
+      <!--      <el-dialog-->
+      <!--      :visible.sync="visible"-->
+      <!--      :fullscreen="true"-->
+      <!--      :before-close="handleClose"-->
+      <!--    >-->
       <iframe :src="flowableUrl" width="100%" :height="iframeHeight" />
     </el-dialog>
   </div>
@@ -288,6 +292,7 @@ export default {
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
         response.data.requireRootName = scope.row.goal.content
         const result = response.data
+        result.solutionId = scope.row.id
         this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
           this.loading = false
           this.visible = true
@@ -301,39 +306,39 @@ export default {
         this.$message.error('匹配失败')
       })
     },
-    handleClose(done) {
-      this.$confirm('确认关闭？').then(_ => {
-        this.loading = true
-        this.visible = false
-        // TODO 异常处理
-        this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
-          this.loading = false
-          if (res.data.msg !== 'success') {
-            this.$message.error('服务方案生成失败' + res.data.msg)
-            return
-          }
-          // 更改状态
-          this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
-            requireId: this.selectRequire.requireId,
-            url: this.flowableUrl
-          }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
-          ).then(() => {
-            require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
-              console.log(_)
-            })
-            require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
-              console.log(_)
-            })
-          }).then(res => {
-            this.getAllRequire()
-          }).catch((res) => {
-          })
-        })
-        done()
-      }).catch(_ => {
-        this.$message.error('发生错误')
-      })
-    },
+    // handleClose(done) {
+    //   this.$confirm('确认关闭？').then(_ => {
+    //     this.loading = true
+    //     this.visible = false
+    //     // TODO 异常处理
+    //     this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
+    //       this.loading = false
+    //       if (res.data.msg !== 'success') {
+    //         this.$message.error('服务方案生成失败' + res.data.msg)
+    //         return
+    //       }
+    //       // 更改状态
+    //       this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
+    //         requireId: this.selectRequire.requireId,
+    //         url: this.flowableUrl
+    //       }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
+    //       ).then(() => {
+    //         require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
+    //           console.log(_)
+    //         })
+    //         require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
+    //           console.log(_)
+    //         })
+    //       }).then(res => {
+    //         this.getAllRequire()
+    //       }).catch((res) => {
+    //       })
+    //     })
+    //     done()
+    //   }).catch(_ => {
+    //     this.$message.error('发生错误')
+    //   })
+    // },
     search() {
       if (this.detail === '') {
         this.$message({
