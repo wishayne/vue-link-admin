@@ -40,6 +40,9 @@
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
+          <el-tag v-for="(target, index) in scope.row.goal.optTargets" :key="index" size="mini" type="info" effect="dark">
+            {{ target.name + ':' + target.weight }}
+          </el-tag>
           <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
           </el-tag>
@@ -66,10 +69,31 @@
       <el-table-column align="center" min-width="100" label="操作">
         <template slot-scope="scope">
           <span v-if="scope.row.requireInfo.state === 0">
-            <el-button v-if="scope.row.__level === 0" type="text" @click="matchRp(scope)">匹配需求模式</el-button>
-            <el-tooltip class="item" effect="dark" content="还没有实现" placement="right">
-              <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
-            </el-tooltip>
+            <el-popover
+              v-if="scope.row.__level === 0"
+              v-model="matchModelVisible"
+              placement="top"
+              width="250"
+            >
+              <el-form ref="form" :model="strategy" label-width="80px">
+                <el-form-item label="阈值">
+                  <el-input v-model="strategy.threshold" />
+                </el-form-item>
+                <el-form-item label="top-k">
+                  <el-input v-model="strategy.topk" />
+                </el-form-item>
+                <el-form-item label="优化算法">
+                  <el-select v-model="strategy.optimization" placeholder="请选择活动区域">
+                    <el-option v-for="(item,index) in optimizationOpt" :key="index" :value="item" :label="item" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" size="mini" @click="matchRp(scope)">立即匹配</el-button>
+                </el-form-item>
+              </el-form>
+              <el-button slot="reference" type="text">匹配需求模式</el-button>
+            </el-popover>
+            <el-button type="text" @click="modifyRequire(scope.row)">修改</el-button>
           </span>
           <span v-else-if="scope.row.requireInfo.state === 1">
             <el-button v-if="scope.row.__level === 0" type="text" @click="matchSp(scope)">生成服务方案</el-button>
@@ -82,12 +106,18 @@
             <el-button type="text" @click="openUrl(scope.row.requireInfo.serviceSchemeUrl)">查看方案</el-button>
             <el-button type="text" @click="execute(scope.row)">执行</el-button>
           </span>
+          <!--          <el-popover-->
+          <!--            placement="top-start"-->
+          <!--            width="200"-->
+          <!--            trigger="hover">-->
+          <!--            <p v-for="(val,key,i) in scope.row.contexts">{{key}}:{{val}}</p>-->
+
+          <!--          </el-popover>-->
         </template>
       </el-table-column>
     </el-table>
     <div class="add-require">
       <el-row>
-        <!--        <el-button type="success" icon="el-icon-upload2" circle @click="newServiceScheme" />-->
         <el-button
           type="primary"
           icon="el-icon-plus"
@@ -105,8 +135,12 @@
     <el-dialog
       :visible.sync="visible"
       :fullscreen="true"
-      :before-close="handleClose"
     >
+      <!--      <el-dialog-->
+      <!--      :visible.sync="visible"-->
+      <!--      :fullscreen="true"-->
+      <!--      :before-close="handleClose"-->
+      <!--    >-->
       <iframe :src="flowableUrl" width="100%" :height="iframeHeight" />
     </el-dialog>
   </div>
@@ -115,7 +149,7 @@
 <script>
 import baseUrl from './api'
 import { getAdminState, getRestrictString, getUserState } from './restrict-options'
-import { handleTime, rpRequireMap, ergodicGoals, calcColor } from './util'
+import { handleTime, rpRequireMap, ergodicGoals, calcColor, optimizationOpt } from './util'
 import qs from 'qs'
 import require from '@/utils/request2'
 import TreeTable from '../component/TreeTable'
@@ -136,7 +170,14 @@ export default {
       delsubData: { file: '', url: '' },
       selectRequire: { requireId: -1, id: -1 },
       loading: false,
-      updateRequire: { visible: false, old: [], new: [] }
+      updateRequire: { visible: false, old: [], new: [] },
+      matchModelVisible: false,
+      strategy: {
+        threshold: 0.5,
+        topk: 10,
+        optimization: optimizationOpt[0]
+      },
+      optimizationOpt: optimizationOpt
     }
   },
   computed: {
@@ -231,7 +272,10 @@ export default {
     matchRp(scope) {
       const requireId = scope.row.goal.requireId
       this.loading = true
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching?requireId=${requireId}`).then(response => {
+      this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/matching`, {
+        requireId: requireId,
+        strategy: this.strategy
+      }).then(response => {
         this.loading = false
         this.$message({
           message: '匹配成功',
@@ -248,6 +292,8 @@ export default {
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
         response.data.requireRootName = scope.row.goal.content
         const result = response.data
+        result.solutionId = scope.row.id
+        result.requireId = requireId
         this.$ajax.post(`${baseUrl.matchUrl}/api/getrequest`, result).then(response => {
           this.loading = false
           this.visible = true
@@ -261,39 +307,39 @@ export default {
         this.$message.error('匹配失败')
       })
     },
-    handleClose(done) {
-      this.$confirm('确认关闭？').then(_ => {
-        this.loading = true
-        this.visible = false
-        // TODO 异常处理
-        this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
-          this.loading = false
-          if (res.data.msg !== 'success') {
-            this.$message.error('服务方案生成失败' + res.data.msg)
-            return
-          }
-          // 更改状态
-          this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
-            requireId: this.selectRequire.requireId,
-            url: this.flowableUrl
-          }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
-          ).then(() => {
-            require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
-              console.log(_)
-            })
-            require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
-              console.log(_)
-            })
-          }).then(res => {
-            this.getAllRequire()
-          }).catch((res) => {
-          })
-        })
-        done()
-      }).catch(_ => {
-        this.$message.error('发生错误')
-      })
-    },
+    // handleClose(done) {
+    //   this.$confirm('确认关闭？').then(_ => {
+    //     this.loading = true
+    //     this.visible = false
+    //     // TODO 异常处理
+    //     this.$ajax.get(`${baseUrl.matchUrl}/api/delsub?inputfile=${this.delsubData.url}&url=${this.delsubData.url}`).then(res => {
+    //       this.loading = false
+    //       if (res.data.msg !== 'success') {
+    //         this.$message.error('服务方案生成失败' + res.data.msg)
+    //         return
+    //       }
+    //       // 更改状态
+    //       this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-state`, qs.stringify({
+    //         requireId: this.selectRequire.requireId,
+    //         url: this.flowableUrl
+    //       }), { headers: { 'content-type': 'application/x-www-form-urlencoded' }}
+    //       ).then(() => {
+    //         require.get(`/solution/toEditing/${this.selectRequire.id}`).then(_ => {
+    //           console.log(_)
+    //         })
+    //         require.get(`/solution/toCreated/${this.selectRequire.id}?url=${this.flowableUrl}`).then(_ => {
+    //           console.log(_)
+    //         })
+    //       }).then(res => {
+    //         this.getAllRequire()
+    //       }).catch((res) => {
+    //       })
+    //     })
+    //     done()
+    //   }).catch(_ => {
+    //     this.$message.error('发生错误')
+    //   })
+    // },
     search() {
       if (this.detail === '') {
         this.$message({
@@ -327,7 +373,7 @@ export default {
       scope.row.showRpResult = true
       this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/match-result?requireId=${requireId}`).then(response => {
         const map = rpRequireMap(response.data)
-        ergodicGoals(this.data, (item) => {
+        ergodicGoals([scope.row], (item) => {
           if (typeof map[item.goal.goalId] !== 'undefined') {
             this.$set(item, 'showRpResult', true)
             this.$set(item, 'rpInfo', map[item.goal.goalId])

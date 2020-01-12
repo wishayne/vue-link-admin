@@ -6,13 +6,14 @@
           <Table
             :columns="rpspColumn"
             :data="search"
-            stripe border
+            border
             ref="table"
           ></Table>
           <Table
+            :row-class-name="rowClassName"
             :columns="rpspDataColumn"
             :data="searchData"
-            stripe border
+            border
             ref="table"
           ></Table>
           <div style="margin: 10px;overflow: hidden">
@@ -98,6 +99,7 @@
         model1_id: "",
         model1_name: "",
         sp: true,
+        update: false,
         model2: "",
         model2_id: "",
         model2_name: "",
@@ -663,7 +665,17 @@
             title: ' ',
             key: 'rpName',
               render: (h, params) => {
-                  return h('div', params.row.rpName);
+                  let update_tag = "";
+                  if (params.row.renew === "new") {
+                      update_tag = "新增"
+                  } else if (params.row.renew === "edit") {
+                      update_tag = "修改"
+                  }
+                  return h('div', [params.row.rpName, (this.update && update_tag !== "") ? h('Tag', {
+                      props: {
+                          color: "orange"
+                      }
+                  }, params.row.renew): ""]);
               }
           }, {
             title: ' ',
@@ -800,17 +812,20 @@
                         } else {
                             console.log(params.row._index)
                             console.log(this.index)
-                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/updaterecord",{
-                                rpId:params.row.rpId,
-                                spId:params.row.spId,
-                                times:params.row.times,
-                                context:params.row.context,
-                                p:params.row.p,
-                                rpIdOld:this.searchData[params.row._index].olddata.rpId,
-                                spIdOld:this.searchData[params.row._index].olddata.spId,
-                                timesOld:this.searchData[params.row._index].olddata.times,
-                                contextOld:this.searchData[params.row._index].olddata.context,
-                                pOld:this.searchData[params.row._index].olddata.p
+                            this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/delrecord",{
+                                rpId:this.searchData[params.row._index].olddata.rpId,
+                                spId:this.searchData[params.row._index].olddata.spId,
+                                times:this.searchData[params.row._index].olddata.times,
+                                context:this.searchData[params.row._index].olddata.context,
+                                p:this.searchData[params.row._index].olddata.p
+                            }).then(res => {
+                                this.$ajax.post("http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/insertrecord", {
+                                    rpId:params.row.rpId,
+                                    spId:params.row.spId,
+                                    times:params.row.times,
+                                    context:params.row.context,
+                                    p:params.row.p
+                                })
                             }).catch(function (error) {
                                 console.log(error);
                             });
@@ -889,6 +904,7 @@
               {
                   title: '需求模式',
                   key: 'rpName',
+
                   render: (h, params) => {
                       return h("Input", {
                           props: {
@@ -1036,7 +1052,8 @@
                                                                   rpName:datamap[i][k].rpName,
                                                                   context:res[k].data[j].context,
                                                                   times:res[k].data[j].times,
-                                                                  p:res[k].data[j].p
+                                                                  p:res[k].data[j].p,
+                                                                  renew:res[k].data[j].renew
                                                               })
                                                           }
                                                       }
@@ -1075,7 +1092,7 @@
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
-      this.$ajax('http://require-linan.192.168.42.159.nip.io/require/api/get-all-rps').then(res => {
+      this.$ajax('http://require-v2-linan.192.168.42.159.nip.io/api/get-all-rps').then(res => {
           let that = this
           that.rpList = [{value:" "}]
           res.data.forEach(data=>{
@@ -1107,18 +1124,18 @@
             console.log(error);
         });
 
-        this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findcontext').then(res => {
-            let that = this
-            that.context = [{value:" "}]
-            res.data.forEach(data=>{
-                that.context.push({
-                    value:data
-                })
-            })
-            console.log("splist",this.context)
-        }).catch(function (error) {
-            console.log(error);
-        });
+        // this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findcontext').then(res => {
+        //     let that = this
+        //     that.context = [{value:" "}]
+        //     res.data.forEach(data=>{
+        //         that.context.push({
+        //             value:data
+        //         })
+        //     })
+        //     console.log("splist",this.context)
+        // }).catch(function (error) {
+        //     console.log(error);
+        // });
 
     },
     methods: {
@@ -1142,6 +1159,7 @@
       updatemm(){
           this.$ajax.get('http://sp-algorithm-linan.192.168.42.159.nip.io/api/umm').then(res => {
               alert("偶对表构造成功，分" + res.data.number.toString() + "类，轮廓系数" + res.data.score.toString())
+              this.update = true
           })
       },
       addRow(){
@@ -1254,12 +1272,20 @@
             let _start = (index - 1) * this.pageSize;
             let _end = index * this.pageSize;
             this.searchData = this.searchAllData.slice(_start, _end)
+        },
+        rowClassName (row, index) {
+          // if (row.renew === "new") {
+          //     return 'demo-table-info-row'
+          // } else if (row.renew === "edit") {
+          //     return 'demo-table-error-row'
+          // }
+          return '';
         }
     },
   }
 </script>
 
-<style scoped>
+<style>
   .layout {
     border: 1px solid #d7dde4;
     background: #f5f7f9;
@@ -1292,4 +1318,30 @@
   .layout-footer-center {
     text-align: center;
   }
+
+  .ivu-table .demo-table-info-row td{
+    /*background-color: #2dd5f5;*/
+    color: #ff9900;
+  }
+  .ivu-table .demo-table-error-row td{
+    /*background-color: #ffff44;*/
+    color: #ff6600;
+  }
+  .ivu-table td.demo-table-info-column{
+    background-color: #2db7f5;
+    color: #fff;
+  }
+  .ivu-table .demo-table-info-cell-name {
+    background-color: #2db7f5;
+    color: #fff;
+  }
+  .ivu-table .demo-table-info-cell-age {
+    background-color: #ff6600;
+    color: #fff;
+  }
+  .ivu-table .demo-table-info-cell-address {
+    background-color: #187;
+    color: #fff;
+  }
+
 </style>

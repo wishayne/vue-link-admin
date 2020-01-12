@@ -385,7 +385,7 @@ import permission from '@/directive/permission/index.js' // 权限判断指令
                                             spFunc:params.row.spFunc,
                                             spField:params.row.spField,
                                             spProcess:"0"
-                                        }
+                                        };
                                         // 在这里打开导入服务
                                         this.handleEdit(params.row);
                                     }
@@ -669,16 +669,16 @@ import permission from '@/directive/permission/index.js' // 权限判断指令
       }
     },
     created() {      //在created函数中使用axios的get请求向后台获取用户信息数据
-      this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findAll').then(res => {
-        this.tableData = res.data
-        //为了能修改数据需要在此处给每行数据加一个是否修改状态
-        console.log(this.tableData)
-        this.tableData.forEach(value => {
-          value.$isEdit = false;
-        });
-      }).catch(function (error) {
-        console.log(error);
-      });
+      // this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findAll').then(res => {
+      //   this.tableData = res.data
+      //   //为了能修改数据需要在此处给每行数据加一个是否修改状态
+      //   console.log(this.tableData)
+      //   this.tableData.forEach(value => {
+      //     value.$isEdit = false;
+      //   });
+      // }).catch(function (error) {
+      //   console.log(error);
+      // });
 
       this.$ajax('http://servicepattern-linan.192.168.42.159.nip.io/demo-0.0.1-SNAPSHOT/findspid').then(res => {
           let that = this
@@ -821,7 +821,7 @@ import permission from '@/directive/permission/index.js' // 权限判断指令
         },
 
         async loadCategories() {
-            return this.$ajax.get('http://service-registry-linan.192.168.42.159.nip.io/serviceCategory/listRoots').then(data => {
+            return this.$ajax.get('http://10.147.18.103:8080/serviceCategory/listRoots').then(data => {
                 const that = this;
                 this.treeData = data.data
                 function edit(list) {

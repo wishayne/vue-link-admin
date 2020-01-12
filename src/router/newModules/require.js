@@ -17,6 +17,14 @@ const requireRouter = {
       }
     },
     {
+      path: '/requires/mine-rp/index',
+      component: () => import('@/views/requires/mine-rp/index'),
+      name: 'mine-rp',
+      meta: {
+        title: '需求模式挖掘', noCache: true
+      }
+    },
+    {
       path: '/requires/add-require/index',
       component: () => import('@/views/requires/add-require/index'),
       name: 'add-require',

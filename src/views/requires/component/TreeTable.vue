@@ -6,13 +6,26 @@
         <template slot-scope="{row}">
           <p :style="`margin-left: ${row.__level * 15}px;margin-top:0;margin-bottom:0`">
             <i class="permission_toggleFold" :class="toggleFoldingClass(row)" @click="toggleFoldingStatus(row)" />
-            <el-input v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
+            <el-autocomplete
+              v-if="isTree"
+              v-model="row.goal.content"
+              size="mini"
+              :fetch-suggestions="getAllGoalAdvice"
+              placeholder="请输入"
+              @focus="getGoalAdviceByParent(row)"
+            />
+            <el-input v-else v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
           </p>
         </template>
       </el-table-column>
       <!--            显示约束-->
       <el-table-column align="center" min-width="200" label="约束">
         <template slot-scope="scope">
+          <span v-if="isTree">
+            <el-tag v-for="(target, index) in scope.row.goal.optTargets" :key="index" size="mini" type="info">
+              {{ target.name + ':' + target.weight }}
+            </el-tag>
+          </span>
           <el-tag v-for="restrict in scope.row.goal.restricts" :key="restrict.key" size="mini">
             {{ getRestrictString(restrict) }}
           </el-tag>
@@ -24,6 +37,7 @@
           <el-button type="text" @click="handleAdd(scope)">增加</el-button>
           <el-button type="text" @click="handleDelete(scope)">删除</el-button>
           <el-button type="text" @click="showDialog(scope)">编辑约束</el-button>
+          <el-button v-if="isTree" type="text" @click="showTargetDialog(scope)">编辑目标</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -37,7 +51,16 @@
       <el-table :data="goalRestricts" class="restricts_table">
         <el-table-column align="center" label="约束名">
           <template slot-scope="{row}">
-            <el-input v-model="row.key" type="text" :placeholder="row.key" size="small" />
+            <el-autocomplete
+              v-if="isTree"
+              v-model="row.key"
+              size="mini"
+              :fetch-suggestions="resSearch"
+              placeholder="请输入"
+              @focus="getResAdvice"
+              @select="item => {handleResSelect(item, row)}"
+            />
+            <el-input v-else v-model="row.key" type="text" :placeholder="row.key" size="small" />
           </template>
         </el-table-column>
         <el-table-column align="center" label="约束类型">
@@ -89,6 +112,37 @@
       <br>
       <!--                        {{goalRestricts}}-->
     </el-dialog>
+    <el-dialog :styles="{width:'40%'}" :visible.sync="targetVisible" title="编辑优化目标" :before-close="closeDialog">
+      <el-table :data="goalOptTargets">
+        <el-table-column align="center" label="优化目标">
+          <template slot-scope="{row}">
+            <el-select v-model="row.name" placeholder="请选择" size="small">
+              <el-option
+                v-for="(item, index) in targetOption"
+                :key="index"
+                :value="item"
+                :label="item"
+              />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="权重">
+          <template slot-scope="{row}">
+            <el-input v-model="row.weight" size="mini" />
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="操作">
+          <template slot-scope="{row}">
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delOptTarget(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <br>
+      <el-row>
+        <el-button type="primary" size="mini" @click="addOptTarget()">增加优化目标</el-button>
+        <el-button type="success" size="mini" @click="handleOptTargetConfirm()">确定</el-button>
+      </el-row>
+    </el-dialog>
     <br>
     <!--        {{data}}-->
     <br>
@@ -104,7 +158,9 @@
 
 <script>
 let restrictNum = 0
+let optNum = 0
 import { getRestrictString } from '../all-requires/restrict-options'
+import { targetOption } from './data'
 
 export default {
   name: 'TreeTable',
@@ -122,11 +178,14 @@ export default {
           content: 'goal',
           // TODO requireId为了解决matching中的data.goal.requireId warning，本身没有意义
           requireId: 0,
-          restricts: []
+          restricts: [],
+          optTargets: []
         },
         children: []
       },
       id: 1,
+      // TODO 改成currentGoal
+      goal: {},
       goalRestricts: [],
       goalRestrictsOld: [],
       goalBrother: [],
@@ -146,7 +205,13 @@ export default {
           value: 'service-provider',
           label: '服务提供者'
         }
-      ]
+      ],
+      targetVisible: false,
+      goalOptTargets: [],
+      targetOption: targetOption,
+      goalAdviceByParent: [],
+      resAdvice: []
+
       //    TODO 把options移动到单独的文件中
     }
   },
@@ -233,6 +298,7 @@ export default {
     },
     addRestrict() {
       restrictNum += 1
+      // TODO 可以提取出来
       this.goalRestricts.push({
         id: restrictNum,
         key: '',
@@ -285,6 +351,99 @@ export default {
       }).then(_ => {
         done()
       }).catch(_ => {})
+    },
+    showTargetDialog(scope) {
+      const node = scope.row
+      this.goal = node.goal
+      this.goalOptTargets = JSON.parse(JSON.stringify(node.goal.optTargets))
+      this.targetVisible = true
+    },
+    addOptTarget() {
+      optNum += 1
+      this.goalOptTargets.push({
+        id: optNum,
+        name: '',
+        weight: 0
+      })
+    },
+    delOptTarget(row) {
+      const index = this.goalOptTargets.findIndex(d => d.id === row.id)
+      this.goalOptTargets.splice(index, 1)
+    },
+    handleOptTargetConfirm() {
+      this.targetVisible = false
+      let sum = 0.0
+      this.goalOptTargets.forEach(item => {
+        sum += parseFloat(item.weight)
+      })
+      this.goalOptTargets.forEach(item => {
+        item.weight = parseFloat(item.weight) / sum
+      })
+      this.goal.optTargets = this.goalOptTargets
+    },
+    getGoalAdviceByParent(goal) {
+      let content = ''
+      if (typeof goal.__family === 'undefined' || goal.__family.length === 0) {
+        content = ''
+      } else {
+        const identity = goal.__family[goal.__family.length - 1]
+        const index = this.tableListData.findIndex(d => d.__identity === identity)
+        content = this.tableListData[index].goal.content
+      }
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-req-by-parent?parentReq=${content}`).then(res => {
+        this.goalAdviceByParent = res.data.map(item => ({
+          value: item
+        }))
+      }).catch(_ => {
+        this.goalAdviceByParent = [{ value: '网络错误' }]
+      })
+    },
+    getAllGoalAdvice(queryString, cb) {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-req-by-input?input=${queryString}`).then(res => {
+        const cand = JSON.parse(JSON.stringify(this.goalAdviceByParent))
+        res.data.forEach(item => {
+          cand.push({ value: item })
+        })
+        cb(cand)
+      }).catch(_ => {
+        cb([{ value: '网络错误' }])
+      })
+    },
+    getResAdvice() {
+      const req = this.goal.content
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-res?req=${req}`).then(res => {
+        this.resAdvice = res.data.map(item => ({
+          value: this.getRestrictString(item),
+          res: item
+        }))
+      }).catch(_ => {
+        this.resAdvice = [{ value: '网络错误', res: {
+          key: '',
+          valueType: '',
+          minValue: 0,
+          maxValue: 9999,
+          unit: 0,
+          value: ''
+        }
+        }]
+      })
+    },
+    resSearch(input, cb) {
+      const resAdvice = this.resAdvice
+      const results = input ? resAdvice.filter(item => {
+        return item.res.key.indexOf(input) !== -1
+      }) : resAdvice
+      // 调用 callback 返回建议列表的数据
+      cb(results)
+    },
+    handleResSelect(item, row) {
+      const res = item.res
+      row.key = res.key
+      row.valueType = res.valueType
+      row.minValue = res.minValue
+      row.maxValue = res.maxValue
+      row.value = res.value
+      row.unit = res.unit
     }
   }
 }

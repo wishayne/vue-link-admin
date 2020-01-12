@@ -1,52 +1,46 @@
 <template>
   <div class="all-rps">
     <h1 style="text-align: center">
-      需求模式维护
+      需求模式挖掘
     </h1>
     <br>
-    <div style="margin:auto;width: 30%">
-      <el-input v-model="detail" placeholder="请输入需要搜索的内容">
-        <el-button slot="append" icon="el-icon-search" @click="search" />
-      </el-input>
-    </div>
-    <br>
-    <el-table
-      :data="data"
-      style="width: 60%"
-      class="mother-table"
-      border
-      highlight-current-row
-      @row-click="rowClick"
-    >
-      <el-table-column prop="info.name" label="名称" align="center" />
-      <el-table-column prop="info.description" label="描述" align="center" />
-      <el-table-column prop="info.domain" label="业务领域" align="center" />
-      <el-table-column prop="info.timestamp" label="创建时间" align="center">
-        <template slot-scope="scope">
-          {{ handleTime(scope.row.info.timestamp) }}
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="info.frequency" label="使用频率" align="center" />
-      <el-table-column prop="info.support" label="支持度" align="center" />
-      <el-table-column prop="info.fresh" label="新鲜度" align="center">
-        <template slot-scope="scope">
-          {{ handleTime(scope.row.info.fresh) }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" width="100" label="操作">
-
-        <template slot-scope="scope">
-          <el-button type="text">查看</el-button>
-          <el-button
-                  v-permission="['/rest/rps/modifyRp']"
-                  type="text" @click="modifyRpDialog(scope)">修改</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card>
+      <el-form ref="form" label-width="80px" :inline="true">
+        <el-form-item label="名称:">
+          <el-select v-model="mineParam.mode" placeholder="请选择活动区域">
+            <el-option v-for="item in mineMode" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="开始时间:">
+          <el-date-picker
+            v-model="mineParam.startTime"
+            type="date"
+            placeholder="选择日期"
+            value-format="yyyy-MM-dd"
+          />
+        </el-form-item>
+        <el-form-item label="结束日期:">
+          <el-date-picker
+            v-model="mineParam.endTime"
+            type="date"
+            placeholder="选择日期"
+            value-format="yyyy-MM-dd"
+          />
+        </el-form-item>
+        <el-form-item label="支持度:">
+          <el-input v-model="mineParam.support" placeholder="请输入最小支持度" size="small" />
+        </el-form-item>
+        <el-form-item label="保留粒度:">
+          <el-input v-model="mineParam.minGrading" placeholder="请输入最小保留粒度" size="small" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="mineRP()">立即挖掘</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
     <br>
     <h2 style="text-align: center">
-      {{ selectedRP.info.name || '' }}
+      新挖掘的服务模式
     </h2>
     <br>
     <el-table :data="tableListData" :row-style="toggleDisplayTr" border stripe class="init_table" size="small">
@@ -68,7 +62,6 @@
         </template>
       </el-table-column>
     </el-table>
-
     <br>
     <el-button
       type="primary"
@@ -76,7 +69,6 @@
       circle
       class="add-rp"
       @click="$router.push({path:'/requires/add-rp/index'})"
-      v-permission="['/rest/rps/addRp']"
     />
 
     <el-dialog :visible.sync="showDialog" :fullscreen="true">
@@ -103,15 +95,13 @@
 </template>
 
 <script>
-  import permission from '@/directive/permission/index.js' // 权限判断指令
-  import {handleTime} from '../all-requires/util'
-  import {getRestrictString} from '../all-requires/restrict-options'
-  import TreeTable from '../component/TreeTable'
+import { handleTime } from '../all-requires/util'
+import { getRestrictString } from '../all-requires/restrict-options'
+import TreeTable from '../component/TreeTable'
 
-  export default {
-  name: 'AllRP',
+export default {
+  name: 'MineRp',
   components: { TreeTable },
-  directives: { permission },
   data() {
     return {
       data: [],
@@ -120,10 +110,12 @@
       },
       detail: '',
       foldList: [],
-      info: {
-        name: '',
-        description: '',
-        domain: ''
+      mineParam: {
+        mode: 'last-time',
+        startTime: '',
+        endTime: '',
+        support: -1,
+        minGrading: -1
       },
       requirePattern: [{
         id: 0,
@@ -135,10 +127,20 @@
       }],
       selectRpId: -1,
       showDialog: false,
-      rpMinerDialog: {
-        show: false,
-        data: []
-      }
+      mineMode: [
+        {
+          value: 'specify',
+          label: '指定时间范围'
+        },
+        {
+          value: 'last-time',
+          label: '从上次结束时开始'
+        },
+        {
+          value: 'all',
+          label: '挖掘全部需求'
+        }
+      ]
     }
   },
   computed: {
@@ -194,25 +196,13 @@
       return parent
     },
     modifyRpDialog(scope) {
-      this.selectRPId = scope.row.info.rpId
+      const rpId = scope.row.info.rpId
+      this.selectRPId = rpId
       this.requirePattern = scope.row.data
       this.info.name = scope.row.info.name
       this.info.description = scope.row.info.description
       this.info.domain = scope.row.info.domain
       this.showDialog = true
-    },
-    search() {
-      if (this.detail === '') {
-        this.$message({
-          message: '搜索内容不可以为空',
-          type: 'warning'
-        })
-        return
-      }
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/search-rp?detail=${this.detail}`).then(response => {
-        this.data = response.data
-        this.selectedRP = { info: {}}
-      })
     },
     modifyRp() {
       this.$ajax.post(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/modify-rp?rpId=${this.selectRPId}`, {
@@ -223,7 +213,36 @@
         this.getAllRPs()
       })
     },
-    handleTime: handleTime
+    handleTime: handleTime,
+    mineRP() {
+      let start = -1
+      let end = -1
+      if (this.mineParam.mode === 'specify') {
+        start = this.mineParam.startTime
+        if (start === '') {
+          this.$message.error('请输入开始日期')
+          return
+        }
+      }
+      if (this.mineParam.mode !== 'all') {
+        end = this.mineParam.endTime
+        if (end === '') {
+          this.$message.error('请输入结束日期')
+          return
+        }
+      }
+      const sup = this.mineParam.support
+      const grad = this.mineParam.minGrading
+      console.log(`${process.env.VUE_APP_RP_MINER_BASE_URL}/api/rp-miner?start=${start}&end=${end}&sup=${sup}&grad=${grad}`)
+      this.$ajax.get(`${process.env.VUE_APP_RP_MINER_BASE_URL}/api/rp-miner?start=${start}&end=${end}&sup=${sup}&grad=${grad}`).then(res => {
+        this.selectedRP = {
+          data: res.data,
+          info: {
+            name: '新挖掘的需求模式'
+          }
+        }
+      })
+    }
   }
 }
 </script>
@@ -265,4 +284,8 @@
       position fixed
       right 5%
       bottom 10%
+    .box-card {
+      width: 60%;
+      margin: auto;
+    }
 </style>

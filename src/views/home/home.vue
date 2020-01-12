@@ -45,7 +45,7 @@
     .product-detail-wrapper{
         width: 100%;
         background-color: #f6f6f6;
-        padding-top: 40px;
+        padding-top: 0px;
         padding-bottom: 40px;
     }
 
