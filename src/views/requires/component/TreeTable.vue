@@ -10,9 +10,9 @@
               v-if="isTree"
               v-model="row.goal.content"
               size="mini"
-              :fetch-suggestions="reqRecommend"
+              :fetch-suggestions="getAllGoalAdvice"
               placeholder="请输入"
-              @focus="getParentGoal(row)"
+              @focus="getGoalAdviceByParent(row)"
             />
             <el-input v-else v-model="row.goal.content" :placeholder="row.goal.content" size="mini" class="goal-input" />
           </p>
@@ -55,8 +55,9 @@
               v-if="isTree"
               v-model="row.key"
               size="mini"
-              :fetch-suggestions="resRecommend"
+              :fetch-suggestions="resSearch"
               placeholder="请输入"
+              @focus="getResAdvice"
               @select="item => {handleResSelect(item, row)}"
             />
             <el-input v-else v-model="row.key" type="text" :placeholder="row.key" size="small" />
@@ -207,7 +208,9 @@ export default {
       ],
       targetVisible: false,
       goalOptTargets: [],
-      targetOption: targetOption
+      targetOption: targetOption,
+      goalAdviceByParent: [],
+      resAdvice: []
 
       //    TODO 把options移动到单独的文件中
     }
@@ -295,6 +298,7 @@ export default {
     },
     addRestrict() {
       restrictNum += 1
+      // TODO 可以提取出来
       this.goalRestricts.push({
         id: restrictNum,
         key: '',
@@ -377,38 +381,60 @@ export default {
       })
       this.goal.optTargets = this.goalOptTargets
     },
-    getParentGoal(goal) {
+    getGoalAdviceByParent(goal) {
+      let content = ''
       if (typeof goal.__family === 'undefined' || goal.__family.length === 0) {
-        this.goal = {
-          content: ''
-        }
+        content = ''
       } else {
         const identity = goal.__family[goal.__family.length - 1]
         const index = this.tableListData.findIndex(d => d.__identity === identity)
-        this.goal = this.tableListData[index].goal
+        content = this.tableListData[index].goal.content
       }
-    },
-    reqRecommend(queryString, cb) {
-      const parentReq = this.goal.content
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/req-recommend?parentReq=${parentReq}`).then(res => {
-        cb(res.data.map(item => ({
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-req-by-parent?parentReq=${content}`).then(res => {
+        this.goalAdviceByParent = res.data.map(item => ({
           value: item
-        })))
+        }))
+      }).catch(_ => {
+        this.goalAdviceByParent = [{ value: '网络错误' }]
+      })
+    },
+    getAllGoalAdvice(queryString, cb) {
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-req-by-input?input=${queryString}`).then(res => {
+        const cand = JSON.parse(JSON.stringify(this.goalAdviceByParent))
+        res.data.forEach(item => {
+          cand.push({ value: item })
+        })
+        cb(cand)
       }).catch(_ => {
         cb([{ value: '网络错误' }])
       })
     },
-    resRecommend(queryString, cb) {
+    getResAdvice() {
       const req = this.goal.content
-      console.log(req)
-      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/res-recommend?req=${req}`).then(res => {
-        cb(res.data.map(item => ({
+      this.$ajax.get(`${process.env.VUE_APP_REQUIRE_BASE_URL}/api/recommend-res?req=${req}`).then(res => {
+        this.resAdvice = res.data.map(item => ({
           value: this.getRestrictString(item),
           res: item
-        })))
+        }))
       }).catch(_ => {
-        cb([{ value: '网络错误' }])
+        this.resAdvice = [{ value: '网络错误', res: {
+          key: '',
+          valueType: '',
+          minValue: 0,
+          maxValue: 9999,
+          unit: 0,
+          value: ''
+        }
+        }]
       })
+    },
+    resSearch(input, cb) {
+      const resAdvice = this.resAdvice
+      const results = input ? resAdvice.filter(item => {
+        return item.res.key.indexOf(input) !== -1
+      }) : resAdvice
+      // 调用 callback 返回建议列表的数据
+      cb(results)
     },
     handleResSelect(item, row) {
       const res = item.res
